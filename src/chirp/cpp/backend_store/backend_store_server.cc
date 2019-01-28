@@ -14,8 +14,8 @@ using chirp::PutRequest;
 using chirp::PutReply;
 using chirp::GetRequest;
 using chirp::GetReply;
-// using chirp::DeleteRequest;
-// using chirp::DeleteReply;
+using chirp::DeleteRequest;
+using chirp::DeleteReply;
 
 // Logic and data behind the server's behaviour - add implementation here.
 class KeyValueStoreServiceImpl final : public KeyValueStore::Service {
@@ -32,10 +32,11 @@ class KeyValueStoreServiceImpl final : public KeyValueStore::Service {
     return Status::OK;
   }
 
-  // Status deletekey(ServerContext* context, const DeleteRequest* request,
-  //                 DeleteReply* reply) override {
-  //   return Status::OK;
-  // }
+  Status deletekey(ServerContext* context, const DeleteRequest* request,
+                  DeleteReply* reply) {
+    std::cout << "Deleted key and value pair." << std::endl;
+    return Status::OK;
+  }
 };
 
 void RunServer() {

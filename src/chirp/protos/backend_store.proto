@@ -19,16 +19,16 @@ message GetReply {
   bytes value = 1;
 }
 
-// message DeleteRequest {
-//   bytes key = 1;
-// }
+message DeleteRequest {
+  bytes key = 1;
+}
 
-// message DeleteReply {
-//   // Empty because success/failure is signaled via GRPC status.
-// }
+message DeleteReply {
+  // Empty because success/failure is signaled via GRPC status.
+}
 
 service KeyValueStore {
   rpc put (PutRequest) returns (PutReply) {}
   rpc get (stream GetRequest) returns (stream GetReply) {}
-  // rpc deletekey (DeleteRequest) returns (DeleteReply) {}
+  rpc deletekey (DeleteRequest) returns (DeleteReply) {}
 }

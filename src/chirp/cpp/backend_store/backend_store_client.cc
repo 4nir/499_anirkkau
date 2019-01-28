@@ -13,8 +13,8 @@ using chirp::PutRequest;
 using chirp::PutReply;
 using chirp::GetRequest;
 using chirp::GetReply;
-// using chirp::DeleteRequest;
-// using chirp::DeleteReply;
+using chirp::DeleteRequest;
+using chirp::DeleteReply;
 
 class KeyValueStoreClient {
   public:
@@ -53,34 +53,56 @@ class KeyValueStoreClient {
   
       // rpc get
       std::string get(const std::string& key) {
-      // Data we are sending to the server.
-      PutRequest request;
-      request.set_key(key);
+        // Data we are sending to the server.
+        GetRequest request;
+        request.set_key(key);
 
-      // Container for the data we expect from the server.
-      PutReply reply;
+        // Container for the data we expect from the server.
+        GetReply reply;
 
-      // Context for the client. It could be used to convey extra information to
-      // the server and/or tweak certain RPC behaviors.
-      ClientContext context;
+        // Context for the client. It could be used to convey extra information to
+        // the server and/or tweak certain RPC behaviors.
+        ClientContext context;
 
-      // The actual RPC.
-      Status status = stub_->put(&context, request, &reply);
+        // The actual RPC.
+        Status status = stub_->get(&context, request, &reply);
 
-      // Act upon its status.
-      if (status.ok()) {
-        return "RPC succeeded";
-      } else {
-        std::cout << status.error_code() << ": " << status.error_message()
-                  << std::endl;
-        return "RPC failed";
+        // Act upon its status.
+        if (status.ok()) {
+          return "RPC succeeded";
+        } else {
+          std::cout << status.error_code() << ": " << status.error_message()
+                    << std::endl;
+          return "RPC failed";
+        }
       }
-    }
 
-      // rpc deletekey (TODO)
+      // rpc deletekey
+      std::string deletekey(const std::string& key) {
+        // Data we are sending to the server.
+        DeleteRequest request;
+        request.set_key(key);
 
+        // Container for the data we expect from the server.
+        DeleteReply reply;
+
+        // Context for the client. It could be used to convey extra information to
+        // the server and/or tweak certain RPC behaviors.
+        ClientContext context;
+
+        // The actual RPC.
+        Status status = stub_->deletekey(&context, request, &reply);
+
+        // Act upon its status.
+        if (status.ok()) {
+          return "RPC succeeded";
+        } else {
+          std::cout << status.error_code() << ": " << status.error_message()
+                    << std::endl;
+          return "RPC failed";
+        }
+      }
   
-
   private:
     std::unique_ptr<KeyValueStore::Stub> stub_;
 };
