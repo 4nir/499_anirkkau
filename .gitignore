@@ -1,0 +1,7 @@
+*.log
+.vagrant
+Vagrantfile
+src/examples
+*.o
+*.pb.cc 
+*.pb.h
