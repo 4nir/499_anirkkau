@@ -51,21 +51,21 @@ class KeyValueStoreClient {
       }
     }
   
-      // rpc get
+      // rpc get (TODO: Implement stream functionality)
       std::string get(const std::string& key) {
         // Data we are sending to the server.
-        GetRequest request;
+        PutRequest request;
         request.set_key(key);
 
         // Container for the data we expect from the server.
-        GetReply reply;
+        PutReply reply;
 
         // Context for the client. It could be used to convey extra information to
         // the server and/or tweak certain RPC behaviors.
         ClientContext context;
 
         // The actual RPC.
-        Status status = stub_->get(&context, request, &reply);
+        Status status = stub_->put(&context, request, &reply);
 
         // Act upon its status.
         if (status.ok()) {
