@@ -5,3 +5,4 @@ src/examples
 *.o
 *.pb.cc 
 *.pb.h
+.vscode/
