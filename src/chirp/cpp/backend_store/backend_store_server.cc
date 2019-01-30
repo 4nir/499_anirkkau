@@ -2,6 +2,9 @@
 #include <memory>
 #include <string>
 
+//Message_lite.h
+#include <google/protobuf/message_lite.h>
+
 #include <grpcpp/grpcpp.h>
 #include "backend_store.grpc.pb.h"
 
@@ -19,24 +22,49 @@ using chirp::DeleteReply;
 
 // Logic and data behind the server's behaviour - add implementation here.
 class KeyValueStoreServiceImpl final : public KeyValueStore::Service {
-  Status put(ServerContext* context, const PutRequest* request,
-                  PutReply* reply) {
-    std::cout << "Stored key and value pair." << std::endl;
-    return Status::OK;
-  }
+    Status put(ServerContext* context, const PutRequest* request,
+                    PutReply* reply) {
 
-  Status get(ServerContext* context, const GetRequest* request,
-                  GetReply* reply) {
-    std::string prefix("This is the value.");
-    reply->set_value(prefix);               
-    return Status::OK;
-  }
+      // Hash map
+      std::string key = request->key();
+      std::string value = request->value();
 
-  Status deletekey(ServerContext* context, const DeleteRequest* request,
-                  DeleteReply* reply) {
-    std::cout << "Deleted key and value pair." << std::endl;
-    return Status::OK;
-  }
+      chirpMap.insert(std::make_pair(key, value));
+
+      // Check chirpMap
+      // std::cout << "Current chirpMap: " << std::endl;
+      // for (const auto& x : chirpMap) {
+      //   std::cout << x.first << ": " << x.second << "\n";
+      // }
+      return Status::OK;
+    }
+
+    Status get(ServerContext* context, const GetRequest* request,
+                    GetReply* reply) {
+      
+      std::string key_requested = request->key();
+      std::string value_requested;
+
+      std::map<std::string, std::string>::iterator it = chirpMap.find(key_requested);
+      if(it != chirpMap.end())
+      {
+        //element found;
+        value_requested = it->second;
+        std::cout << "value found: " << value_requested << std::endl;
+      } else {
+        value_requested = "Not found.";
+      }
+      reply->set_value(value_requested);               
+      return Status::OK;
+    }
+
+    Status deletekey(ServerContext* context, const DeleteRequest* request,
+                    DeleteReply* reply) {
+      std::cout << "Deleted key and value pair." << std::endl;
+      return Status::OK;
+    }
+  private:
+    std::map<std::string, std::string> chirpMap;
 };
 
 void RunServer() {
