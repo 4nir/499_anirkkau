@@ -1,12 +1,26 @@
+#ifndef BACKEND_CLIENT
+#define BACKEND_CLIENT
+
+#include <chrono>
 #include <iostream>
 #include <memory>
+#include <random>
 #include <string>
+#include <thread>
 
 #include <grpcpp/grpcpp.h>
+#include <grpcpp/channel.h>
+#include <grpcpp/client_context.h>
+#include <grpcpp/create_channel.h>
 #include "backend_store.grpc.pb.h"
+
+#endif
 
 using grpc::Channel;
 using grpc::ClientContext;
+using grpc::ClientReader;
+using grpc::ClientReaderWriter;
+using grpc::ClientWriter;
 using grpc::Status;
 using chirp::KeyValueStore;
 using chirp::PutRequest;
@@ -22,6 +36,12 @@ struct ChirpMessage {
   std::string message;
 };
 
+GetRequest MakeGetRequest(const std::string& key) {
+  GetRequest req;
+  req.set_key(key);
+  return req;
+}
+
 class KeyValueStoreClient {
   public:
     KeyValueStoreClient(std::shared_ptr<Channel> channel)
@@ -32,6 +52,11 @@ class KeyValueStoreClient {
 
     // rpc put
     std::string put(const std::string& key, const std::string& value) {
+
+      // Context for the client. It could be used to convey extra information to
+      // the server and/or tweak certain RPC behaviors.
+      ClientContext context;
+
       // Data we are sending to the server.
       PutRequest request;
       request.set_key(key);
@@ -39,10 +64,6 @@ class KeyValueStoreClient {
 
       // Container for the data we expect from the server.
       PutReply reply;
-
-      // Context for the client. It could be used to convey extra information to
-      // the server and/or tweak certain RPC behaviors.
-      ClientContext context;
 
       // The actual RPC.
       Status status = stub_->put(&context, request, &reply);
@@ -59,27 +80,44 @@ class KeyValueStoreClient {
   
       // rpc get (TODO: Implement stream functionality)
       std::string get(const std::string& key) {
-        // Data we are sending to the server.
-        GetRequest request;
-        request.set_key(key);
-
-        // Container for the data we expect from the server.
-        GetReply reply;
 
         // Context for the client. It could be used to convey extra information to
         // the server and/or tweak certain RPC behaviors.
         ClientContext context;
 
-        // The actual RPC. TODO: Figure out stub
-        Status status = stub_->get(&context, request, &reply);
+
+        std::shared_ptr<ClientReaderWriter<GetRequest, GetReply> > stream(
+        stub_->get(&context));
+
+        std::thread writer([stream]() {
+          std::vector<GetRequest> requests{
+            MakeGetRequest("Dick Grayson"),
+            MakeGetRequest("Jason Todd"),
+            MakeGetRequest("Tim Drake")};
+          for (const GetRequest& req : requests) {
+            std::cout << "Sending message: " << req.key()
+                      << std::endl;
+            stream->Write(req);
+          }
+          stream->WritesDone();
+        });
+
+        // Container for the data we expect from the server.
+        GetReply reply;
+        while (stream->Read(&reply)) {
+          std::cout << "Client got message: " << reply.value() << std::endl;
+        }
+
+        writer.join();
+        Status status = stream->Finish();
         
         // Act upon its status.
         if (status.ok()) {
-          return reply.value();
+          return "GET client-stream recev worked!";
         } else {
           std::cout << status.error_code() << ": " << status.error_message()
-                    << std::endl;
-          return "RPC failed";
+                  << std::endl;
+          return "GET client-stream recev failed.";
         }
       }
 
@@ -124,7 +162,7 @@ int main(int argc, char** argv) {
   // Serialize Chirp to be stored
   std::string chirp_owner = "John";
   chirp::ChirpMessage chirp;
-  chirp.set_message("Hello World Again.");
+  chirp.set_message("Hello World.");
 
   std::string chirp_str = chirp.SerializeAsString();
 
@@ -135,11 +173,13 @@ int main(int argc, char** argv) {
   std::cout << std::endl;
 
   //TODO: Delete test_chirp_str
-  std::string test_chirp_str = "Yo World";
+  std::string test_chirp_str = "Hey from Client";
 
-  std::string reply = store_client.put(chirp_owner, test_chirp_str);
-  std::string reply2 = store_client.get(chirp_owner);
-  std::cout << "Greeter received: " << reply2 << std::endl;
+  store_client.put("Dick Grayson", test_chirp_str);
+  store_client.put("Jason Todd", test_chirp_str);
+  store_client.put("Tim Drake", test_chirp_str);
+  std::string reply = store_client.get(chirp_owner);
+  std::cout << "Greeter received: " << reply << std::endl;
 
 
 

@@ -1,16 +1,27 @@
+#ifndef BACKEND_SERVER
+#define BACKEND_SERVER
+
+#include <algorithm>
+#include <chrono>
+#include <cmath>
 #include <iostream>
 #include <memory>
 #include <string>
 
-//Message_lite.h
-#include <google/protobuf/message_lite.h>
-
 #include <grpcpp/grpcpp.h>
+#include <grpcpp/server.h>
+#include <grpcpp/server_builder.h>
+#include <grpcpp/server_context.h>
 #include "backend_store.grpc.pb.h"
+
+#endif
 
 using grpc::Server;
 using grpc::ServerBuilder;
 using grpc::ServerContext;
+using grpc::ServerReader;
+using grpc::ServerReaderWriter;
+using grpc::ServerWriter;
 using grpc::Status;
 using chirp::KeyValueStore;
 using chirp::PutRequest;
@@ -20,44 +31,56 @@ using chirp::GetReply;
 using chirp::DeleteRequest;
 using chirp::DeleteReply;
 
+GetReply MakeGetReply(const std::string& value) {
+  GetReply reply;
+  reply.set_value(value);
+  return reply;
+}
+
 // Logic and data behind the server's behaviour - add implementation here.
 class KeyValueStoreServiceImpl final : public KeyValueStore::Service {
     Status put(ServerContext* context, const PutRequest* request,
                     PutReply* reply) {
-
       // Hash map
       std::string key = request->key();
       std::string value = request->value();
-
       chirpMap.insert(std::make_pair(key, value));
-
-      // Check chirpMap
-      // std::cout << "Current chirpMap: " << std::endl;
-      // for (const auto& x : chirpMap) {
-      //   std::cout << x.first << ": " << x.second << "\n";
-      // }
       return Status::OK;
     }
 
-    Status get(ServerContext* context, const GetRequest* request,
-                    GetReply* reply) {
+    Status get(ServerContext* context,
+                    ServerReaderWriter<GetReply, GetRequest>* stream) {
       
-      std::string key_requested = request->key();
-      std::string value_requested;
-
-      std::map<std::string, std::string>::iterator it = chirpMap.find(key_requested);
-      if(it != chirpMap.end())
-      {
-        //element found;
-        value_requested = it->second;
-        std::cout << "value found: " << value_requested << std::endl;
-      } else {
-        value_requested = "Not found.";
+      std::vector<GetRequest> received_requests;
+      GetRequest request_catcher;
+      while (stream->Read(&request_catcher)){
+        std::cout << "Server recieved: " << request_catcher.key() << std::endl;
+        received_requests.push_back(request_catcher);
+        // Perform BackEndStore lookup
       }
-      reply->set_value(value_requested);               
+
+      for (GetRequest req : received_requests) {
+        std::string key_requested = req.key();
+        std::string value_requested;
+        std::map<std::string, std::string>::iterator it = chirpMap.find(key_requested);
+
+        if(it != chirpMap.end())
+        {
+          //element found;
+          value_requested = it->second;
+          std::cout << "Key: " << key_requested << "; Value: " << value_requested << std::endl;
+          GetReply reply = MakeGetReply(value_requested);
+          stream->Write(reply);
+        } else {
+          value_requested = "Not found.";
+          std::cout << "Key: " << key_requested << "; Value: " << value_requested << std::endl;
+        }
+      }
+
       return Status::OK;
     }
 
+    // TODO; Implement deletekey()
     Status deletekey(ServerContext* context, const DeleteRequest* request,
                     DeleteReply* reply) {
       std::cout << "Deleted key and value pair." << std::endl;
