@@ -40,7 +40,9 @@ Status ServiceLayerServiceImpl::chirp(ServerContext* context, const ChirpRequest
   chirp.set_username(chirp_username);
   chirp.set_text(chirp_text);
   HelperFunctions helper;
-  std::string chirp_id = helper.GenerateChirpID();
+  std::string chirp_id = helper.GenerateRandomChirpID();
+  //TODO: delete this
+  chirp_id = "test1";
   chirp.set_id(chirp_id);
 
   // Serialize Chirp
@@ -53,6 +55,20 @@ Status ServiceLayerServiceImpl::chirp(ServerContext* context, const ChirpRequest
   std::cout << std::endl;
 
   store_client.put(chirp_id, chirp_str);
+  
+  return Status::OK;
+}
+
+Status ServiceLayerServiceImpl::read(ServerContext* context, const ReadRequest* request,
+                    ReadReply* reply) {
+  // Chirp Implementation
+  std::cout << "Service Layer Server READ Pinged" << std::endl;
+
+  KeyValueStoreClient store_client(grpc::CreateChannel("localhost:50000", grpc::InsecureChannelCredentials()));
+  std::string chirp_id = request->chirp_id();
+
+  store_client.get(chirp_id);
+  //Loop over 
   
   return Status::OK;
 }

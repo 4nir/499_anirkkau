@@ -47,10 +47,12 @@ using chirp::RegisterRequest;
 using chirp::RegisterReply;
 using chirp::ChirpRequest;
 using chirp::ChirpReply;
+using chirp::ReadRequest;
+using chirp::ReadReply;
 
 class HelperFunctions {
   public:
-     std::string GenerateChirpID();
+     std::string GenerateRandomChirpID();
 };
 
 class KeyValueStoreClient {
@@ -72,9 +74,10 @@ class KeyValueStoreClient {
 
 class ServiceLayerClient {
   public:
+    int chirp_count = 0;
     std::string registeruser(const std::string& username);
     std::string chirp(const std::string& username, const std::string& text);
-    std::string getvalue(const std::string& key);
+    std::string read(const std::string& id);
 
     ServiceLayerClient(std::shared_ptr<Channel> channel)
         : stub_(ServiceLayer::NewStub(channel)) {}

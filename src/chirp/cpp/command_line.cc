@@ -19,6 +19,7 @@ int main(int argc, char** argv) {
 
   service_client.registeruser("Damian Wayne");
   service_client.chirp(username, "Lemons");
+  service_client.read("test1");
 
 
   return 0;

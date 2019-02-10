@@ -178,9 +178,34 @@ std::string KeyValueStoreClient::deletekey(const std::string& key) {
       }
     }
 
+    std::string ServiceLayerClient::read(const std::string& id){
+      // Context for the client. It could be used to convey extra information to
+      // the server and/or tweak certain RPC behaviors.
+      ClientContext context;
+
+      // Data we are sending to the server.
+      ReadRequest request;
+      request.set_chirp_id(id);
+
+      // Container for the data we expect from the server.
+      ReadReply reply;
+
+      // The actual RPC.
+      Status status = stub_->read(&context, request, &reply);
+
+      // Act upon its status.
+      if (status.ok()) {
+        return "RPC succeeded";
+      } else {
+        std::cout << status.error_code() << ": " << status.error_message()
+                  << std::endl;
+        return "RPC failed";
+      }
+    }
+
 //--------------------------HelperFunctions--------------------------//
 
-std::string HelperFunctions::GenerateChirpID(){
+std::string HelperFunctions::GenerateRandomChirpID(){
   srand(time(NULL));
 
   const std::string CurrentClientID = "cid//";  
