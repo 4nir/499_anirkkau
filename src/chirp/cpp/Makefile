@@ -22,13 +22,13 @@ vpath %.proto $(PROTOS_PATH)
 
 all: backend_store_server service_layer_server command_line
 
-command_line: command_line.cc backend_store.pb.o backend_store.grpc.pb.o service_layer.pb.o service_layer.grpc.pb.o service_layer.o
+command_line: command_line.cc backend_store.pb.o backend_store.grpc.pb.o service_layer.pb.o service_layer.grpc.pb.o server_clients.o
 	$(CXX) $^ $(LDFLAGS) -o $@
 
 backend_store_server: backend_store.pb.o backend_store.grpc.pb.o service_layer.pb.o service_layer.grpc.pb.o backend_store_server.o
 	$(CXX) $^ $(LDFLAGS) -o $@
 
-service_layer_server: backend_store.pb.o backend_store.grpc.pb.o service_layer.pb.o service_layer.grpc.pb.o service_layer.o service_layer_server.o
+service_layer_server: service_layer.pb.o service_layer.grpc.pb.o backend_store.pb.o backend_store.grpc.pb.o server_clients.o service_layer_server.o
 	$(CXX) $^ $(LDFLAGS) -o $@
 
 .PRECIOUS: %.grpc.pb.cc
@@ -40,4 +40,4 @@ service_layer_server: backend_store.pb.o backend_store.grpc.pb.o service_layer.p
 	$(PROTOC) -I $(PROTOS_PATH) --cpp_out=. $<
 
 clean:
-	rm -f *.o *.pb.cc *.pb.h command_line service_layer backend_store_server service_layer_server
+	rm -f *.o *.pb.cc *.pb.h command_line server_clients backend_store_server service_layer_server

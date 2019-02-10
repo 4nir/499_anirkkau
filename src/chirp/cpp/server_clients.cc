@@ -9,7 +9,7 @@
 #include <grpcpp/create_channel.h>
 #include "backend_store.grpc.pb.h"
 #include "service_layer.grpc.pb.h"
-#include "service_layer.h"
+#include "server_clients.h"
 
 //-------------------------KeyValueStoreClient-------------------------//
 
@@ -25,6 +25,13 @@ std::string KeyValueStoreClient::put(const std::string& key, const std::string& 
   // Context for the client. It could be used to convey extra information to
   // the server and/or tweak certain RPC behaviors.
   ClientContext context;
+  
+  if(value == ""){
+    // "" signals new user to register
+    context.AddMetadata("type", "register");
+  } else {
+    context.AddMetadata("type", "chirp");
+  }
 
   // Data we are sending to the server.
   PutRequest request;
@@ -58,15 +65,10 @@ std::string KeyValueStoreClient::get(const std::string& key) {
   std::shared_ptr<ClientReaderWriter<GetRequest, GetReply> > stream(
   stub_->get(&context));
 
-  GetRequest r1 = MakeGetRequest("Dick Grayson");
-  GetRequest r2 = MakeGetRequest("Jason Todd");
-  GetRequest r3 = MakeGetRequest("Tim Drake");
+  GetRequest r1 = MakeGetRequest(key);
 
   std::thread writer([&]() {
-        std::vector<GetRequest> requests{
-          r1,
-          r2,
-          r3};
+        std::vector<GetRequest> requests{r1};
         for (const GetRequest& req : requests) {
           std::cout << "Sending message: " << req.key()
                     << std::endl;
@@ -78,7 +80,7 @@ std::string KeyValueStoreClient::get(const std::string& key) {
   // Container for the data we expect from the server.
   GetReply reply;
   while (stream->Read(&reply)) {
-    std::cout << "Client got message: " << reply.value() << std::endl;
+    std::cout << reply.value() << std::endl;
   }
 
   writer.join();
@@ -130,7 +132,7 @@ std::string KeyValueStoreClient::deletekey(const std::string& key) {
       // the server and/or tweak certain RPC behaviors.
       ClientContext context;
 
-      // // Data we are sending to the server.
+      // Data we are sending to the server.
       RegisterRequest request;
       request.set_username(username);
 
@@ -149,3 +151,46 @@ std::string KeyValueStoreClient::deletekey(const std::string& key) {
         return "RPC failed";
       }
     }
+
+    std::string ServiceLayerClient::chirp(const std::string& username, const std::string& text){
+      // Context for the client. It could be used to convey extra information to
+      // the server and/or tweak certain RPC behaviors.
+      ClientContext context;
+
+      // Data we are sending to the server.
+      ChirpRequest request;
+      request.set_username(username);
+      request.set_text(text);
+
+      // Container for the data we expect from the server.
+      ChirpReply reply;
+
+      // The actual RPC.
+      Status status = stub_->chirp(&context, request, &reply);
+
+      // Act upon its status.
+      if (status.ok()) {
+        return "RPC succeeded";
+      } else {
+        std::cout << status.error_code() << ": " << status.error_message()
+                  << std::endl;
+        return "RPC failed";
+      }
+    }
+
+//--------------------------HelperFunctions--------------------------//
+
+std::string HelperFunctions::GenerateChirpID(){
+  srand(time(NULL));
+
+  const std::string CurrentClientID = "cid//";  
+  std::ostringstream os;
+  for (int i = 0; i < 7; ++i)
+  {
+      int digit = rand() % 10;
+      os << digit;
+  }
+  std::string result = CurrentClientID + os.str();
+
+  return result;
+}

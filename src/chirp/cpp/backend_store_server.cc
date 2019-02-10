@@ -11,19 +11,54 @@
 // Logic and data behind the server's behaviour - add implementation here.
     Status KeyValueStoreServiceImpl::put(ServerContext* context, const PutRequest* request,
                     PutReply* reply) {
-      // Hash map
 
-      std::cout << "KVS Store Server GET Pinged!" << std::endl;
+      std::cout << "KVS Store Server PUT Pinged!" << std::endl;
       std::string key = request->key();
       std::string value = request->value();
-      chirpMap.insert(std::make_pair(key, value));
-      std::cout << "Inserted Key: " << key << " Value: " << value << std::endl;
+      std::multimap< grpc::string_ref, grpc::string_ref > metadata = context->client_metadata();
+      std::string type;
+
+      // Get type from metadata
+      auto data_iter = metadata.find("type");
+        if(data_iter != metadata.end())
+          {
+            //Found type;
+            std::string s((data_iter->second).data(), (data_iter->second).length());
+            type = s;
+          } else {
+            std::cout << "Error: No metadata." << std::endl;
+          }
+      std::cout << "Metadata: " << type << std::endl;
+
+      if(type == "register"){
+
+      //If User (USR)
+        std::map<std::string, std::vector<std::string> >::iterator it = chirpMap.find(key);
+        if(it == chirpMap.end())
+          {
+            //Username doesn't already exist;
+            std::vector<std::string> value_list;
+            value_list.push_back(value);
+            chirpMap.insert(std::make_pair(key, value_list));
+            std::cout << "Inserted Key: " << key << "; Value: " << value << std::endl;
+            
+          } else {
+            std::cout << "Error: Username already exists." << std::endl;
+          }
+      } else if(type == "chirp") {
+            //If Chirp ID (CID)
+            std::vector<std::string> value_list;
+            value_list.push_back(value);
+            chirpMap.insert(std::make_pair(key, value_list));
+            std::cout << "Inserted Key: " << key << "; Value: " << value << std::endl;
+      }
       return Status::OK;
     }
 
     Status KeyValueStoreServiceImpl::get(ServerContext* context,
                     ServerReaderWriter<GetReply, GetRequest>* stream) {
-      
+
+      std::cout << "KVS Store Server GET Pinged!" << std::endl;
       std::vector<GetRequest> received_requests;
       GetRequest request_catcher;
       while (stream->Read(&request_catcher)){
@@ -34,20 +69,21 @@
 
       for (GetRequest req : received_requests) {
         std::string key_requested = req.key();
-        std::string value_requested;
-        std::map<std::string, std::string>::iterator it = chirpMap.find(key_requested);
+        std::vector<std::string> value_requested_list;
+        std::map<std::string, std::vector<std::string> >::iterator it = chirpMap.find(key_requested);
 
         if(it != chirpMap.end())
         {
           //element found;
-          value_requested = it->second;
-          std::cout << "Key: " << key_requested << "; Value: " << value_requested << std::endl;
           GetReply reply;
-          reply.set_value(value_requested);
-          stream->Write(reply);
+          value_requested_list = it->second;
+          for(std::string value_requested : value_requested_list){
+            std::cout << "Key: " << key_requested << "; Value: " << value_requested << std::endl;
+            reply.set_value(value_requested);
+            stream->Write(reply);
+          }
         } else {
-          value_requested = "Not found.";
-          std::cout << "Key: " << key_requested << "; Value: " << value_requested << std::endl;
+          std::cout << "Key not found. " << std::endl;
         }
       }
 
@@ -62,7 +98,7 @@
     }
 
 void RunServer() {
-  std::string server_address("0.0.0.0:50052");
+  std::string server_address("0.0.0.0:50000");
   KeyValueStoreServiceImpl service;
 
   ServerBuilder builder;

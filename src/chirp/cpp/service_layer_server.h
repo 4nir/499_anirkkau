@@ -10,7 +10,7 @@
 #include <grpcpp/server_context.h>
 #include "backend_store.grpc.pb.h"
 #include "service_layer.grpc.pb.h"
-#include "service_layer.h"
+#include "server_clients.h"
 
 // Client Includes
 using grpc::Channel;
@@ -43,6 +43,8 @@ using chirp::Timestamp;
 using chirp::Chirp;
 using chirp::RegisterRequest;
 using chirp::RegisterReply;
+using chirp::ChirpRequest;
+using chirp::ChirpReply;
 
 // Logic and data behind the server's behaviour - add implementation here.
 class ServiceLayerServiceImpl final : public ServiceLayer::Service {
@@ -50,11 +52,8 @@ class ServiceLayerServiceImpl final : public ServiceLayer::Service {
   public:
     Status registeruser(ServerContext* context, const RegisterRequest* request,
                     RegisterReply* reply);
-
-  private: 
-    //Q: Is this right?
-    // KeyValueStoreClient store_client(grpc::CreateChannel(
-    // "localhost:50052", grpc::InsecureChannelCredentials())); 
+    Status chirp(ServerContext* context, const ChirpRequest* request,
+                    ChirpReply* reply);
 };
 
 

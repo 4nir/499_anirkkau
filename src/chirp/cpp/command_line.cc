@@ -9,27 +9,17 @@
 #include <grpcpp/create_channel.h>
 #include "backend_store.grpc.pb.h"
 #include "backend_store_server.h"
-#include "service_layer.h"
+#include "server_clients.h"
 
 int main(int argc, char** argv) {
-  // Instantiate the client. It requires a channel, out of which the actual RPCs
-  // are created. This channel models a connection to an endpoint (in this case,
-  // localhost at port 50051). We indicate that the channel isn't authenticated
-  // (use of InsecureChannelCredentials()).
-  KeyValueStoreClient store_client(grpc::CreateChannel(
-      "localhost:50052", grpc::InsecureChannelCredentials()));  
+  std::string username = "anir";
 
   ServiceLayerClient service_client(grpc::CreateChannel(
-  "localhost:50051", grpc::InsecureChannelCredentials()));  
+  "localhost:50002", grpc::InsecureChannelCredentials()));  
 
-  //TODO: Delete test_chirp_str
-  std::string test_chirp_str = "Hey from Client";
+  service_client.registeruser("Damian Wayne");
+  service_client.chirp(username, "Lemons");
 
-  store_client.put("Dick Grayson", test_chirp_str);
-  store_client.put("Jason Todd", test_chirp_str);
-  store_client.put("Tim Drake", test_chirp_str);
-  std::string reply = service_client.registeruser("Damian Wayne");
-  std::cout << "Greeter received: " << reply << std::endl;
 
   return 0;
 }

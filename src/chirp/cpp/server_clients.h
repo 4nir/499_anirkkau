@@ -1,10 +1,11 @@
-#ifndef SERVICE_LAYER_H
-#define SERVICE_LAYER_H
+#ifndef SERVER_CLIENTS_H
+#define SERVER_CLIENTS_H
 
 #include <iostream>
 #include <random>
 #include <string>
 #include <thread>
+#include <sstream>
 
 #include <grpcpp/grpcpp.h>
 #include <grpcpp/channel.h>
@@ -44,6 +45,13 @@ using chirp::Timestamp;
 using chirp::Chirp;
 using chirp::RegisterRequest;
 using chirp::RegisterReply;
+using chirp::ChirpRequest;
+using chirp::ChirpReply;
+
+class HelperFunctions {
+  public:
+     std::string GenerateChirpID();
+};
 
 class KeyValueStoreClient {
   public:
@@ -65,16 +73,14 @@ class KeyValueStoreClient {
 class ServiceLayerClient {
   public:
     std::string registeruser(const std::string& username);
+    std::string chirp(const std::string& username, const std::string& text);
+    std::string getvalue(const std::string& key);
 
     ServiceLayerClient(std::shared_ptr<Channel> channel)
         : stub_(ServiceLayer::NewStub(channel)) {}
 
   private:
     std::unique_ptr<ServiceLayer::Stub> stub_;
-};
-
-struct ChirpMessage {
-  std::string message;
 };
 
 #endif
