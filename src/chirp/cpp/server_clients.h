@@ -52,14 +52,18 @@ using chirp::ReadReply;
 
 class HelperFunctions {
   public:
+     std::vector<std::string>* DFSReplyThread(std::map<std::string, std::vector<std::string> > chirpMap,
+                                             std::vector<std::string> *reply_thread_vec,
+                                             std::string chirp_id);
      std::string GenerateRandomChirpID();
+     
 };
 
 class KeyValueStoreClient {
   public:
     std::string put(const std::string& key, const std::string& value);
 
-    std::string get(const std::string& key);
+    std::vector<Chirp> get(const std::string& key);
 
     std::string deletekey(const std::string& key);
 
@@ -76,7 +80,8 @@ class ServiceLayerClient {
   public:
     int chirp_count = 0;
     std::string registeruser(const std::string& username);
-    std::string chirp(const std::string& username, const std::string& text);
+    std::string chirp(const std::string& username, const std::string& text, 
+                      const std::string& id, const std::string& parent_id);
     std::string read(const std::string& id);
 
     ServiceLayerClient(std::shared_ptr<Channel> channel)

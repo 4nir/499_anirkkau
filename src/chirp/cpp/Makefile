@@ -25,7 +25,7 @@ all: backend_store_server service_layer_server command_line
 command_line: command_line.cc backend_store.pb.o backend_store.grpc.pb.o service_layer.pb.o service_layer.grpc.pb.o server_clients.o
 	$(CXX) $^ $(LDFLAGS) -o $@
 
-backend_store_server: backend_store.pb.o backend_store.grpc.pb.o service_layer.pb.o service_layer.grpc.pb.o backend_store_server.o
+backend_store_server: backend_store.pb.o backend_store.grpc.pb.o service_layer.pb.o service_layer.grpc.pb.o server_clients.o backend_store_server.o
 	$(CXX) $^ $(LDFLAGS) -o $@
 
 service_layer_server: service_layer.pb.o service_layer.grpc.pb.o backend_store.pb.o backend_store.grpc.pb.o server_clients.o service_layer_server.o

@@ -55,7 +55,7 @@ std::string KeyValueStoreClient::put(const std::string& key, const std::string& 
 }
 
 // rpc get (TODO: Implement stream functionality)
-std::string KeyValueStoreClient::get(const std::string& key) {
+std::vector<Chirp> KeyValueStoreClient::get(const std::string& key) {
 
   // Context for the client. It could be used to convey extra information to
   // the server and/or tweak certain RPC behaviors.
@@ -65,22 +65,39 @@ std::string KeyValueStoreClient::get(const std::string& key) {
   std::shared_ptr<ClientReaderWriter<GetRequest, GetReply> > stream(
   stub_->get(&context));
 
+  std::vector<GetRequest> requests;
+  // TODOL Make GetRequest for each Chirp in Thread
   GetRequest r1 = MakeGetRequest(key);
+  requests.push_back(r1);
 
   std::thread writer([&]() {
-        std::vector<GetRequest> requests{r1};
+        
         for (const GetRequest& req : requests) {
-          std::cout << "Sending message: " << req.key()
-                    << std::endl;
           stream->Write(req);
         }
+        // Q: When does this need to be called?
         stream->WritesDone();
   });
 
   // Container for the data we expect from the server.
   GetReply reply;
+  std::vector<Chirp> chirp_thread;
   while (stream->Read(&reply)) {
-    std::cout << reply.value() << std::endl;
+
+    // Deserialize chirps
+     std::string chirp_str = reply.value();
+     Chirp chirp_catcher;
+     chirp_catcher.ParseFromString(chirp_str);
+     chirp_thread.push_back(chirp_catcher);
+
+    //  // If chirp has parent_id not "", then create new request
+    //  if(chirp_catcher.parent_id() != ""){
+    //    GetRequest request_parent = MakeGetRequest(request_parent);
+    //    stream->Write(request_parent);
+    //  } else {
+    //    // Root chirp, no more parents
+    //    stream->WritesDone();
+    //  }
   }
 
   writer.join();
@@ -88,11 +105,11 @@ std::string KeyValueStoreClient::get(const std::string& key) {
   
   // Act upon its status.
   if (status.ok()) {
-    return "GET client-stream recev worked!";
+    return chirp_thread;
   } else {
     std::cout << status.error_code() << ": " << status.error_message()
             << std::endl;
-    return "GET client-stream recev failed.";
+    return chirp_thread;
   }
 }
 
@@ -152,15 +169,18 @@ std::string KeyValueStoreClient::deletekey(const std::string& key) {
       }
     }
 
-    std::string ServiceLayerClient::chirp(const std::string& username, const std::string& text){
+    std::string ServiceLayerClient::chirp(const std::string& username, const std::string& text, 
+                                          const std::string& id, const std::string& parent_id){
       // Context for the client. It could be used to convey extra information to
       // the server and/or tweak certain RPC behaviors.
       ClientContext context;
+      context.AddMetadata("chirp_id", id);
 
       // Data we are sending to the server.
       ChirpRequest request;
       request.set_username(username);
       request.set_text(text);
+      request.set_parent_id(parent_id);
 
       // Container for the data we expect from the server.
       ChirpReply reply;
@@ -193,6 +213,10 @@ std::string KeyValueStoreClient::deletekey(const std::string& key) {
       // The actual RPC.
       Status status = stub_->read(&context, request, &reply);
 
+      //TODO: reply holds Chirp thread
+      // You can change the output of this function to a vector and 
+      //output the thread to the command_line
+
       // Act upon its status.
       if (status.ok()) {
         return "RPC succeeded";
@@ -204,6 +228,29 @@ std::string KeyValueStoreClient::deletekey(const std::string& key) {
     }
 
 //--------------------------HelperFunctions--------------------------//
+
+std::vector<std::string>* HelperFunctions::DFSReplyThread(std::map<std::string, std::vector<std::string> > chirpMap,
+                                             std::vector<std::string> *reply_thread_vec,
+                                             std::string chirp_id){
+   auto it = chirpMap.find(chirp_id);
+   if(it != chirpMap.end()){
+     std::vector<std::string> reply_vec = it->second;
+     // Add chirp bytes to reply_thread_vec (Index 0)
+     reply_thread_vec->push_back(reply_vec.at(0));
+
+     if(reply_vec.size() > 1){ // Chirp has replies
+       for(int i = 1; i < reply_vec.size(); i++){ // Skip first index
+          reply_thread_vec = DFSReplyThread(chirpMap, reply_thread_vec, reply_vec.at(i));
+       }
+       return reply_thread_vec;
+
+     } else {                  // End of sub-thread
+       return reply_thread_vec;
+     }
+   } else {
+     std::cout << "Error: chirp_id not found in chirpMap" << std::endl;
+   }                                          
+}
 
 std::string HelperFunctions::GenerateRandomChirpID(){
   srand(time(NULL));

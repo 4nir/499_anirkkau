@@ -7,12 +7,12 @@
 #include <grpcpp/server_context.h>
 #include "backend_store.grpc.pb.h"
 #include "backend_store_server.h"
+#include "server_clients.h"
 
 // Logic and data behind the server's behaviour - add implementation here.
     Status KeyValueStoreServiceImpl::put(ServerContext* context, const PutRequest* request,
                     PutReply* reply) {
 
-      std::cout << "KVS Store Server PUT Pinged!" << std::endl;
       std::string key = request->key();
       std::string value = request->value();
       std::multimap< grpc::string_ref, grpc::string_ref > metadata = context->client_metadata();
@@ -28,7 +28,7 @@
           } else {
             std::cout << "Error: No metadata." << std::endl;
           }
-      std::cout << "Metadata: " << type << std::endl;
+      // std::cout << "PUT Metadata type: " << type << std::endl;
 
       if(type == "register"){
 
@@ -40,17 +40,45 @@
             std::vector<std::string> value_list;
             value_list.push_back(value);
             chirpMap.insert(std::make_pair(key, value_list));
-            std::cout << "Inserted Key: " << key << "; Value: " << value << std::endl;
+            // std::cout << "Inserted Key: " << key << "; Value: " << value << std::endl;
             
           } else {
             std::cout << "Error: Username already exists." << std::endl;
           }
       } else if(type == "chirp") {
             //If Chirp ID (CID)
-            std::vector<std::string> value_list;
-            value_list.push_back(value);
-            chirpMap.insert(std::make_pair(key, value_list));
-            std::cout << "Inserted Key: " << key << "; Value: " << value << std::endl;
+            Chirp chirp_catcher;
+            chirp_catcher.ParseFromString(value);
+            std::string chirp_id = chirp_catcher.id();
+            std::string chirp_parent_id = chirp_catcher.parent_id();
+            // std::cout << "chirp_catcher.id(): " << chirp_id << std::endl;
+            // std::cout << "chirp_catcher.parent_id(): " << chirp_parent_id << std::endl;
+
+            // For chirps in chirpMap, index 0 contains byte string form, rest are serialized chirp replies
+
+            if(chirp_parent_id == "0"){                               // Root chirp TODO: Change to null?
+
+              // Store chirp id : fresh reply vector
+              std::vector<std::string> value_list;
+              value_list.push_back(value);
+              chirpMap.insert(std::make_pair(key, value_list));
+              std::cout << "Inserted Key: " << key  << std::endl;
+            } else {                                           //TODO:  Reply chirp
+              // Step 1: Append chirp bytes to parent chirp's reply vector
+              auto it = chirpMap.find(chirp_parent_id);
+              if(it != chirpMap.end())
+              {
+                (it->second).push_back(key);   //Q: Is this right?
+              } else {
+                std::cout << "Error: Parent ID not found in map." << std::endl;
+              }
+
+              // Step 2: Store chirp id : fresh reply vector
+              std::vector<std::string> value_list;
+              value_list.push_back(value);
+              chirpMap.insert(std::make_pair(key, value_list));
+              std::cout << "Inserted Key: " << key  << std::endl;
+            }
       }
       return Status::OK;
     }
@@ -58,32 +86,35 @@
     Status KeyValueStoreServiceImpl::get(ServerContext* context,
                     ServerReaderWriter<GetReply, GetRequest>* stream) {
 
-      std::cout << "KVS Store Server GET Pinged!" << std::endl;
       std::vector<GetRequest> received_requests;
       GetRequest request_catcher;
       while (stream->Read(&request_catcher)){
-        std::cout << "Server recieved: " << request_catcher.key() << std::endl;
         received_requests.push_back(request_catcher);
-        // Perform BackEndStore lookup
       }
 
       for (GetRequest req : received_requests) {
         std::string key_requested = req.key();
-        std::vector<std::string> value_requested_list;
         std::map<std::string, std::vector<std::string> >::iterator it = chirpMap.find(key_requested);
 
-        if(it != chirpMap.end())
+        if(it == chirpMap.end())
         {
+          std::cout << "Key not found. " << std::endl;
+        } else {
           //element found;
+
+          // TODO: DFSSearch that returns vector of entire thread (of chirp bytes)
+          std::vector<std::string>* reply_thread_vec = new std::vector<std::string>();
+          std::vector<std::string>* full_thread_vec;
+          HelperFunctions helper;
+          full_thread_vec = helper.DFSReplyThread(chirpMap, reply_thread_vec, key_requested);
           GetReply reply;
-          value_requested_list = it->second;
-          for(std::string value_requested : value_requested_list){
-            std::cout << "Key: " << key_requested << "; Value: " << value_requested << std::endl;
+          std::string value_requested;
+          for(int i = 0; i < full_thread_vec->size(); i++){
+            value_requested = full_thread_vec->at(i);
             reply.set_value(value_requested);
             stream->Write(reply);
           }
-        } else {
-          std::cout << "Key not found. " << std::endl;
+          // delete reply_thread_vec;
         }
       }
 
@@ -93,6 +124,7 @@
     // TODO; Implement deletekey()
     Status KeyValueStoreServiceImpl::deletekey(ServerContext* context, const DeleteRequest* request,
                     DeleteReply* reply) {
+      //TODO
       std::cout << "Deleted key and value pair." << std::endl;
       return Status::OK;
     }

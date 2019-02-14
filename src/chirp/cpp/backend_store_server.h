@@ -9,6 +9,7 @@
 #include <grpcpp/server_builder.h>
 #include <grpcpp/server_context.h>
 #include "backend_store.grpc.pb.h"
+#include "server_clients.h"
 
 using grpc::Server;
 using grpc::ServerBuilder;
