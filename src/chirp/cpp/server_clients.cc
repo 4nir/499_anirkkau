@@ -20,17 +20,23 @@ GetRequest KeyValueStoreClient::MakeGetRequest(const std::string& key){
 }
 
 // rpc put
-std::string KeyValueStoreClient::put(const std::string& key, const std::string& value) {
+std::string KeyValueStoreClient::put(const std::string& key, const std::string& value, 
+                                     const std::string& type) {
 
   // Context for the client. It could be used to convey extra information to
   // the server and/or tweak certain RPC behaviors.
   ClientContext context;
   
-  if(value == ""){
-    // "" signals new user to register
+  if(type == "register"){
+    // "register" signals new user to register
     context.AddMetadata("type", "register");
-  } else {
+    // "chirp" signals new chirp
+  } else if (type == "chirp") {
     context.AddMetadata("type", "chirp");
+  } else if (type == "follow"){ // otherwise, it's an append to a following list
+    context.AddMetadata("type", "follow");
+  } else {
+    std::cout << "Error: Invalid type @ store_client PUT" << std::endl;
   }
 
   // Data we are sending to the server.
@@ -54,7 +60,7 @@ std::string KeyValueStoreClient::put(const std::string& key, const std::string& 
   }
 }
 
-// rpc get (TODO: Implement stream functionality)
+// rpc get
 std::vector<Chirp> KeyValueStoreClient::get(const std::string& key) {
 
   // Context for the client. It could be used to convey extra information to
@@ -66,7 +72,6 @@ std::vector<Chirp> KeyValueStoreClient::get(const std::string& key) {
   stub_->get(&context));
 
   std::vector<GetRequest> requests;
-  // TODOL Make GetRequest for each Chirp in Thread
   GetRequest r1 = MakeGetRequest(key);
   requests.push_back(r1);
 
@@ -169,12 +174,10 @@ std::string KeyValueStoreClient::deletekey(const std::string& key) {
       }
     }
 
-    std::string ServiceLayerClient::chirp(const std::string& username, const std::string& text, 
-                                          const std::string& id, const std::string& parent_id){
+    std::string ServiceLayerClient::chirp(const std::string& username, const std::string& text, const std::string& parent_id){
       // Context for the client. It could be used to convey extra information to
       // the server and/or tweak certain RPC behaviors.
       ClientContext context;
-      context.AddMetadata("chirp_id", id);
 
       // Data we are sending to the server.
       ChirpRequest request;
@@ -187,6 +190,32 @@ std::string KeyValueStoreClient::deletekey(const std::string& key) {
 
       // The actual RPC.
       Status status = stub_->chirp(&context, request, &reply);
+
+      // Act upon its status.
+      if (status.ok()) {
+        return "RPC succeeded";
+      } else {
+        std::cout << status.error_code() << ": " << status.error_message()
+                  << std::endl;
+        return "RPC failed";
+      }
+    }
+
+    std::string ServiceLayerClient::follow(const std::string& username, const std::string& to_follow){
+      // Context for the client. It could be used to convey extra information to
+      // the server and/or tweak certain RPC behaviors.
+      ClientContext context;
+
+      // Data we are sending to the server.
+      FollowRequest request;
+      request.set_username(username);
+      request.set_to_follow(to_follow);
+
+      // Container for the data we expect from the server.
+      FollowReply reply;
+
+      // The actual RPC.
+      Status status = stub_->follow(&context, request, &reply);
 
       // Act upon its status.
       if (status.ok()) {
@@ -229,6 +258,8 @@ std::string KeyValueStoreClient::deletekey(const std::string& key) {
 
 //--------------------------HelperFunctions--------------------------//
 
+int HelperFunctions::chirp_count = 0;
+
 std::vector<std::string>* HelperFunctions::DFSReplyThread(std::map<std::string, std::vector<std::string> > chirpMap,
                                              std::vector<std::string> *reply_thread_vec,
                                              std::string chirp_id){
@@ -252,17 +283,11 @@ std::vector<std::string>* HelperFunctions::DFSReplyThread(std::map<std::string, 
    }                                          
 }
 
-std::string HelperFunctions::GenerateRandomChirpID(){
-  srand(time(NULL));
+std::string HelperFunctions::GenerateChirpID(){
+  chirp_count++;
+  std::string CurrentClientID = "cid//";
+  std::string count_str = std::to_string(chirp_count);
+  CurrentClientID += count_str;
 
-  const std::string CurrentClientID = "cid//";  
-  std::ostringstream os;
-  for (int i = 0; i < 7; ++i)
-  {
-      int digit = rand() % 10;
-      os << digit;
-  }
-  std::string result = CurrentClientID + os.str();
-
-  return result;
+  return CurrentClientID;
 }

@@ -54,6 +54,8 @@ class ServiceLayerServiceImpl final : public ServiceLayer::Service {
                     RegisterReply* reply);
     Status chirp(ServerContext* context, const ChirpRequest* request,
                     ChirpReply* reply);
+    Status follow(ServerContext* context, const FollowRequest* request,
+                    FollowReply* reply);
     Status read(ServerContext* context, const ReadRequest* request,
     ReadReply* reply);
     

@@ -19,7 +19,7 @@ Status ServiceLayerServiceImpl::registeruser(ServerContext* context, const Regis
   std::string new_user = request->username();
 
   // "" in the value field signals to the KVS server it's a new user
-  store_client.put(new_user, "");
+  store_client.put(new_user, "register", "register");
   return Status::OK;
 }
 
@@ -27,25 +27,11 @@ Status ServiceLayerServiceImpl::chirp(ServerContext* context, const ChirpRequest
                     ChirpReply* reply) {
 
   KeyValueStoreClient store_client(grpc::CreateChannel("localhost:50000", grpc::InsecureChannelCredentials()));
+  HelperFunctions helper;
   std::string chirp_username = request->username();
   std::string chirp_text = request->text();
+  std::string chirp_id = helper.GenerateChirpID();
   std::string chirp_parent_id = request->parent_id();
-
-  // Get chirp_id from context
-  std::multimap< grpc::string_ref, grpc::string_ref > metadata = context->client_metadata();
-  std::string chirp_id;
-
-  // Get type from metadata
-  auto data_iter = metadata.find("chirp_id");
-    if(data_iter != metadata.end())
-      {
-        //Found type;
-        std::string s((data_iter->second).data(), (data_iter->second).length());
-        chirp_id = s;
-      } else {
-        std::cout << "Error: No metadata." << std::endl;
-      }
-  // std::cout << "chirp_id from metadata: "  << chirp_id << std::endl;
 
   // Generate Chirp
   Chirp chirp;
@@ -62,9 +48,23 @@ Status ServiceLayerServiceImpl::chirp(ServerContext* context, const ChirpRequest
   // std::for_each(chirp_str.begin(), chirp_str.end(),
   //               [](unsigned char i) { std::cout << std::hex << std::uppercase << (int) i; });
   // std::cout << std::endl;
-
-  store_client.put(chirp_id, chirp_str);
+  std::string type = "chirp";
+  store_client.put(chirp_id, chirp_str, type);
   
+  return Status::OK;
+}
+
+Status ServiceLayerServiceImpl::follow(ServerContext* context, const FollowRequest* request,
+                    FollowReply* reply){
+  // Follow Implementation
+
+  KeyValueStoreClient store_client(grpc::CreateChannel("localhost:50000", grpc::InsecureChannelCredentials()));
+  std::string username = request->username();
+  std::string to_follow = request->to_follow();
+
+  // "" in the value field signals to the KVS server it's a new user
+  std::string type = "follow";
+  store_client.put(username, to_follow, "follow");
   return Status::OK;
 }
 

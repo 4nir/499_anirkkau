@@ -33,14 +33,13 @@
       if(type == "register"){
 
       //If User (USR)
-        std::map<std::string, std::vector<std::string> >::iterator it = chirpMap.find(key);
+        auto it = chirpMap.find(key);
         if(it == chirpMap.end())
           {
             //Username doesn't already exist;
             std::vector<std::string> value_list;
-            value_list.push_back(value);
             chirpMap.insert(std::make_pair(key, value_list));
-            // std::cout << "Inserted Key: " << key << "; Value: " << value << std::endl;
+            std::cout << "Registered new user: " << key << std::endl;
             
           } else {
             std::cout << "Error: Username already exists." << std::endl;
@@ -63,7 +62,7 @@
               value_list.push_back(value);
               chirpMap.insert(std::make_pair(key, value_list));
               std::cout << "Inserted Key: " << key  << std::endl;
-            } else {                                           //TODO:  Reply chirp
+            } else {                                                   //  Reply chirp
               // Step 1: Append chirp bytes to parent chirp's reply vector
               auto it = chirpMap.find(chirp_parent_id);
               if(it != chirpMap.end())
@@ -79,6 +78,29 @@
               chirpMap.insert(std::make_pair(key, value_list));
               std::cout << "Inserted Key: " << key  << std::endl;
             }
+      } else if (type == "follow") { // otherwise, it's an append to a following list
+          std::string user_to_follow = value;
+          auto it = chirpMap.find(key);
+          if(it != chirpMap.end())
+          {
+            std::vector<std::string> value_list = it->second;
+            value_list.push_back(user_to_follow);
+            chirpMap.erase(key);
+            chirpMap.insert(std::make_pair(key, value_list));
+
+            // Test following list
+            std::cout << "User " << key << " now following: ";
+            for(int i = 0; i < value_list.size(); i++){
+              std::cout << value_list.at(i) << " ";
+            }
+            std::cout << "\n";
+            
+          } else {
+            std::cout << "Error: Username doesn't exist." << std::endl;
+          }
+
+      } else {
+        std::cout << "Error: Invalid type @ store_server PUT" << std::endl;
       }
       return Status::OK;
     }
@@ -98,11 +120,11 @@
 
         if(it == chirpMap.end())
         {
-          std::cout << "Key not found. " << std::endl;
+          std::cout << "Error: Key not found. " << std::endl;
         } else {
           //element found;
 
-          // TODO: DFSSearch that returns vector of entire thread (of chirp bytes)
+          // DFSSearch that returns vector of entire thread (of chirp bytes)
           std::vector<std::string>* reply_thread_vec = new std::vector<std::string>();
           std::vector<std::string>* full_thread_vec;
           HelperFunctions helper;
@@ -121,11 +143,9 @@
       return Status::OK;
     }
 
-    // TODO; Implement deletekey()
     Status KeyValueStoreServiceImpl::deletekey(ServerContext* context, const DeleteRequest* request,
                     DeleteReply* reply) {
-      //TODO
-      std::cout << "Deleted key and value pair." << std::endl;
+      chirpMap.erase(request->key());
       return Status::OK;
     }
 
