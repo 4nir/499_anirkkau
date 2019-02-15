@@ -2,6 +2,7 @@
 #include <random>
 #include <string>
 #include <thread>
+#include <chrono>
 
 #include <gflags/gflags.h>
 #include <grpcpp/grpcpp.h>
@@ -89,9 +90,15 @@ int main(int argc, char** argv) {
 
     if(FLAGS_command.find("monitor") != string::npos){
       std::string username = FLAGS_user;
-      std::string output = service_client.monitor(username);
-      if(output != ""){
-        std::cout << output << std::endl;
+      std::string latest_chirp = "";
+      while(1){
+          std::string output = service_client.monitor(username);
+          if(output != "" && output != latest_chirp){
+            latest_chirp = output;
+            std::cout << "Latest chirp from feed: " << output << std::endl;
+          }
+      
+        std::this_thread::sleep_for(std::chrono::milliseconds(2000));
       }
     }
   } else {

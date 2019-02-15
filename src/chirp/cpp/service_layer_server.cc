@@ -100,6 +100,10 @@ Status ServiceLayerServiceImpl::monitor(ServerContext* context, const MonitorReq
   std::vector<std::string> following_list = store_client.getFollowingList(username, type);
   //If latest chirp's username is in following_list return chirp
   int last_index = chirp_log.size() - 1;
+  if(last_index < 0){
+    std::cout << "Error: Nobody has chirped yet!" << std::endl;
+    return Status::OK;
+  }
   std::string latest_chirp_bytes = chirp_log.at(last_index);
   Chirp chirp_obj;
   chirp_obj.ParseFromString(latest_chirp_bytes);
