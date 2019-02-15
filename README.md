@@ -13,8 +13,8 @@ Email: anirkkau@usc.edu
 2) Running Chirp
 
   To build the program, follow these commands:
-  $ cd /vagrant/src/chirp/cpp
-  $ make
+  - $ cd /vagrant/src/chirp/cpp
+  - $ make
 
   After which, three executables will be generated: backend_store_server, service_layer_server, command_line
 
