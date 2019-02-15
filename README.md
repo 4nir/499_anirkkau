@@ -33,6 +33,5 @@ Email: anirkkau@usc.edu
    
 3) General Notes: 
 
- - Monitor only partially works - running it will notify you if the last chirp is from someone you follow. I will
-   have to set up a loop so it calls periodically while still allowing concurrent users. 
+ - Running monitor will notify you if the last chirp is from someone you follow, and displays a feed of new chirps from everyone you follow 
  - If you don't see output in the command_line window, you might find responses in the other two servers.
