@@ -14,10 +14,12 @@
 
 using namespace std;
 
-DEFINE_bool(register, false, "user wants to register");
 DEFINE_string(user, "", "username");
+DEFINE_bool(register, false, "user wants to register");
 DEFINE_bool(follow, false, "user wants to follow");
 DEFINE_bool(chirp, false, "user wants to post chirp");
+DEFINE_bool(reply, false, "user wants to reply to chirp");
+DEFINE_bool(read, false, "user wants to read chirp thread");
 DEFINE_string(command, "", "read command from command line");
 
 int main(int argc, char** argv) {
@@ -33,32 +35,49 @@ int main(int argc, char** argv) {
      FLAGS_command += "chirp";   // implied by --consider_made_up_languages
   if (FLAGS_follow)
      FLAGS_command += "follow";   // implied by --consider_made_up_languages
+  if (FLAGS_read)
+     FLAGS_command += "read";   // implied by --consider_made_up_languages
 
   if(FLAGS_command.find("register") != string::npos){
       service_client.registeruser(argv[1]);
    }
-   if(FLAGS_command.find("chirp") != string::npos){
 
-     // Root Chirp
+  if(FLAGS_user != ""){
+    if(FLAGS_command.find("chirp") != string::npos){
+      if((!FLAGS_reply) && argc == 2){
+        // Root Chirp
+      std::cout << "Root chirping" << std::endl;
       std::string username = FLAGS_user;
       std::string text(argv[1]);
-      service_client.chirp(username, text, "0");
+      std::string output = service_client.chirp(username, text, "0");
+      std::cout << output << std::endl;
+      } else if (FLAGS_reply && argc == 3){
+        // Reply Chirp
+      std::cout << "Reply chirping" << std::endl;
+      std::string username = FLAGS_user;
+      std::string text(argv[1]);
+      std::string reply_id(argv[2]);
+      std::string output = service_client.chirp(username, text, reply_id);
+      std::cout << output << std::endl;
+      } else {
+        std::cout << "Error: Invalid syntax for --chirp" << std::endl;
+      }
+  }
+    if(FLAGS_command.find("follow") != string::npos){
+        if(argc == 2){
+          std::string username = FLAGS_user;
+          std::string output = service_client.follow(username, argv[1]);
+          std::cout << output << std::endl;
+        }
+    }
 
-      // Reply Chirp
-   }
-  if(FLAGS_command.find("follow") != string::npos){
-      service_client.follow(argv[1], argv[2]);
-   }
-
-  // service_client.chirp(username, "Lemons", chirp_id_1, "0");
-  // service_client.chirp(username, "Are", chirp_id_2, chirp_id_1);
-  // service_client.chirp(username, "Evil", chirp_id_3, chirp_id_1);
-  // service_client.chirp(username, "True", chirp_id_4, chirp_id_2);
-  // // service_client.chirp(username, "End", chirp_id_5, chirp_id_3);
-  // service_client.chirp(username, "WHACK", chirp_id_6, chirp_id_1);
-  // service_client.chirp(username, "Sniper Rifle", chirp_id_7, chirp_id_4);
-
-  // service_client.read(chirp_id_1);
+    if(FLAGS_command.find("read") != string::npos){
+        std::string output = service_client.read(argv[1]);
+        std::cout << output << std::endl;
+    }
+  } else {
+    std::cout << "Error: User flag required" << std::endl;
+  }
 
 
   return 0;

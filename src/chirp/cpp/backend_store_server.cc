@@ -50,8 +50,6 @@
             chirp_catcher.ParseFromString(value);
             std::string chirp_id = chirp_catcher.id();
             std::string chirp_parent_id = chirp_catcher.parent_id();
-            // std::cout << "chirp_catcher.id(): " << chirp_id << std::endl;
-            // std::cout << "chirp_catcher.parent_id(): " << chirp_parent_id << std::endl;
 
             // For chirps in chirpMap, index 0 contains byte string form, rest are serialized chirp replies
 
@@ -70,6 +68,7 @@
                 (it->second).push_back(key);   //Q: Is this right?
               } else {
                 std::cout << "Error: Parent ID not found in map." << std::endl;
+                std::cout << "chirp_parent_id: "  << chirp_parent_id << std::endl;
               }
 
               // Step 2: Store chirp id : fresh reply vector

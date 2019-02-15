@@ -42,12 +42,6 @@ Status ServiceLayerServiceImpl::chirp(ServerContext* context, const ChirpRequest
 
   // Serialize Chirp
   std::string chirp_str = chirp.SerializeAsString();
-
-  // // Test Chirp Serialization
-  // std::cout << "chirp_str: ";
-  // std::for_each(chirp_str.begin(), chirp_str.end(),
-  //               [](unsigned char i) { std::cout << std::hex << std::uppercase << (int) i; });
-  // std::cout << std::endl;
   std::string type = "chirp";
   store_client.put(chirp_id, chirp_str, type);
   
@@ -74,15 +68,28 @@ Status ServiceLayerServiceImpl::read(ServerContext* context, const ReadRequest* 
   KeyValueStoreClient store_client(grpc::CreateChannel("localhost:50000", grpc::InsecureChannelCredentials()));
   std::string chirp_id = request->chirp_id();
 
-  std::vector<Chirp> chirp_thread;
-  chirp_thread = store_client.get(chirp_id);
+  std::vector<Chirp> chirp_Obj_thread;
+  chirp_Obj_thread = store_client.get(chirp_id);
+  std::string chirp_thread = "";
   //Loop over 
-  for (Chirp chirp : chirp_thread){
-    std::cout << chirp.text() << std::endl;
+  for (Chirp chirp : chirp_Obj_thread){
+    std::string chirp_text(chirp.text());
+    std::string chirp_username(chirp.username());
+    chirp_thread += chirp_username;
+    chirp_thread += " said: ";
+    chirp_thread += chirp_text;
+    chirp_thread += "\n==================\n";
   }
 
-  //TODO: Add thread to reply object
+  reply->set_chirp_thread(chirp_thread);
 
+  return Status::OK;
+}
+
+Status ServiceLayerServiceImpl::monitor(ServerContext* context,
+                    ServerReaderWriter<MonitorReply, MonitorRequest>* stream){
+  
+  
   return Status::OK;
 }
 

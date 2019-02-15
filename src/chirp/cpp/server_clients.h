@@ -51,6 +51,8 @@ using chirp::FollowRequest;
 using chirp::FollowReply;
 using chirp::ReadRequest;
 using chirp::ReadReply;
+using chirp::MonitorRequest;
+using chirp::MonitorReply;
 
 class HelperFunctions {
   public:
@@ -87,6 +89,7 @@ class ServiceLayerClient {
                       const std::string& parent_id);
     std::string follow(const std::string& username, const std::string& to_follow);
     std::string read(const std::string& id);
+    std::string monitor(const std::string& username);
 
     ServiceLayerClient(std::shared_ptr<Channel> channel)
         : stub_(ServiceLayer::NewStub(channel)) {}

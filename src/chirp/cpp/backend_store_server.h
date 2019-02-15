@@ -11,22 +11,6 @@
 #include "backend_store.grpc.pb.h"
 #include "server_clients.h"
 
-using grpc::Server;
-using grpc::ServerBuilder;
-using grpc::ServerContext;
-using grpc::ServerReader;
-using grpc::ServerReaderWriter;
-using grpc::ServerWriter;
-using grpc::Status;
-
-using chirp::KeyValueStore;
-using chirp::PutRequest;
-using chirp::PutReply;
-using chirp::GetRequest;
-using chirp::GetReply;
-using chirp::DeleteRequest;
-using chirp::DeleteReply;
-
 class KeyValueStoreServiceImpl final : public KeyValueStore::Service {
   
   public:

@@ -80,7 +80,6 @@ std::vector<Chirp> KeyValueStoreClient::get(const std::string& key) {
         for (const GetRequest& req : requests) {
           stream->Write(req);
         }
-        // Q: When does this need to be called?
         stream->WritesDone();
   });
 
@@ -94,15 +93,6 @@ std::vector<Chirp> KeyValueStoreClient::get(const std::string& key) {
      Chirp chirp_catcher;
      chirp_catcher.ParseFromString(chirp_str);
      chirp_thread.push_back(chirp_catcher);
-
-    //  // If chirp has parent_id not "", then create new request
-    //  if(chirp_catcher.parent_id() != ""){
-    //    GetRequest request_parent = MakeGetRequest(request_parent);
-    //    stream->Write(request_parent);
-    //  } else {
-    //    // Root chirp, no more parents
-    //    stream->WritesDone();
-    //  }
   }
 
   writer.join();
@@ -166,7 +156,7 @@ std::string KeyValueStoreClient::deletekey(const std::string& key) {
 
       // Act upon its status.
       if (status.ok()) {
-        return "RPC succeeded";
+        return username + " has been registered.";
       } else {
         std::cout << status.error_code() << ": " << status.error_message()
                   << std::endl;
@@ -193,7 +183,7 @@ std::string KeyValueStoreClient::deletekey(const std::string& key) {
 
       // Act upon its status.
       if (status.ok()) {
-        return "RPC succeeded";
+        return username + "\'s chirp was posted.";
       } else {
         std::cout << status.error_code() << ": " << status.error_message()
                   << std::endl;
@@ -219,7 +209,7 @@ std::string KeyValueStoreClient::deletekey(const std::string& key) {
 
       // Act upon its status.
       if (status.ok()) {
-        return "RPC succeeded";
+        return username + " now follows " + to_follow;
       } else {
         std::cout << status.error_code() << ": " << status.error_message()
                   << std::endl;
@@ -242,18 +232,20 @@ std::string KeyValueStoreClient::deletekey(const std::string& key) {
       // The actual RPC.
       Status status = stub_->read(&context, request, &reply);
 
-      //TODO: reply holds Chirp thread
-      // You can change the output of this function to a vector and 
-      //output the thread to the command_line
+      std::string final_thread = reply.chirp_thread();
 
       // Act upon its status.
       if (status.ok()) {
-        return "RPC succeeded";
+        return final_thread;
       } else {
         std::cout << status.error_code() << ": " << status.error_message()
                   << std::endl;
         return "RPC failed";
       }
+    }
+
+    std::string ServiceLayerClient::monitor(const std::string& username){
+
     }
 
 //--------------------------HelperFunctions--------------------------//
