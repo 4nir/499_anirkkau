@@ -25,9 +25,10 @@ class ServiceLayerServiceImpl final : public ServiceLayer::Service {
     Status read(ServerContext* context, const ReadRequest* request,
     ReadReply* reply);
 
-    Status monitor(ServerContext* context,
-                    ServerReaderWriter<MonitorReply, MonitorRequest>* stream);
-    
+    Status monitor(ServerContext* context, const MonitorRequest* request,
+                    ServerWriter<MonitorReply>* writer);
+private:
+  std::vector<std::string> chirp_log;
 };
 
 

@@ -44,6 +44,9 @@ Status ServiceLayerServiceImpl::chirp(ServerContext* context, const ChirpRequest
   std::string chirp_str = chirp.SerializeAsString();
   std::string type = "chirp";
   store_client.put(chirp_id, chirp_str, type);
+
+  // Push into chirp_log. Every chirp gets logged
+  chirp_log.push_back(chirp_str);
   
   return Status::OK;
 }
@@ -64,12 +67,13 @@ Status ServiceLayerServiceImpl::follow(ServerContext* context, const FollowReque
 
 Status ServiceLayerServiceImpl::read(ServerContext* context, const ReadRequest* request,
                     ReadReply* reply) {
+  std::string type = "read";
 
   KeyValueStoreClient store_client(grpc::CreateChannel("localhost:50000", grpc::InsecureChannelCredentials()));
   std::string chirp_id = request->chirp_id();
 
   std::vector<Chirp> chirp_Obj_thread;
-  chirp_Obj_thread = store_client.get(chirp_id);
+  chirp_Obj_thread = store_client.get(chirp_id, type);
   std::string chirp_thread = "";
   //Loop over 
   for (Chirp chirp : chirp_Obj_thread){
@@ -86,9 +90,34 @@ Status ServiceLayerServiceImpl::read(ServerContext* context, const ReadRequest* 
   return Status::OK;
 }
 
-Status ServiceLayerServiceImpl::monitor(ServerContext* context,
-                    ServerReaderWriter<MonitorReply, MonitorRequest>* stream){
+Status ServiceLayerServiceImpl::monitor(ServerContext* context, const MonitorRequest* request,
+                    ServerWriter<MonitorReply>* writer){ //TODO: Confirm MonitorReply
+  std::string type = "monitor";
+
+  KeyValueStoreClient store_client(grpc::CreateChannel("localhost:50000", grpc::InsecureChannelCredentials()));
+  std::string username = request->username();
+
+  std::vector<std::string> following_list = store_client.getFollowingList(username, type);
+  //If latest chirp's username is in following_list return chirp
+  int last_index = chirp_log.size() - 1;
+  std::string latest_chirp_bytes = chirp_log.at(last_index);
+  Chirp chirp_obj;
+  chirp_obj.ParseFromString(latest_chirp_bytes);
+  std::string latest_chirper = chirp_obj.username();
+  std::cout << "Latest chirper: " << latest_chirper << std::endl;
   
+  // Check if user follows latest chirper
+  for(std::string follow : following_list){
+    if(follow == latest_chirper){
+      std::cout << "New chirp!" << std::endl;
+      MonitorReply reply;
+      reply.set_chirp_bytes(latest_chirp_bytes);
+      writer->Write(reply);
+    }
+  }
+  // MonitorReply reply;
+  // reply.set_chirp_bytes("");
+  // writer->Write(reply);
   
   return Status::OK;
 }

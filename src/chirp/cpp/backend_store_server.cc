@@ -50,6 +50,8 @@
             chirp_catcher.ParseFromString(value);
             std::string chirp_id = chirp_catcher.id();
             std::string chirp_parent_id = chirp_catcher.parent_id();
+            // std::cout << "chirp_catcher.id(): " << chirp_id << std::endl;
+            // std::cout << "chirp_catcher.parent_id(): " << chirp_parent_id << std::endl;
 
             // For chirps in chirpMap, index 0 contains byte string form, rest are serialized chirp replies
 
@@ -68,7 +70,6 @@
                 (it->second).push_back(key);   //Q: Is this right?
               } else {
                 std::cout << "Error: Parent ID not found in map." << std::endl;
-                std::cout << "chirp_parent_id: "  << chirp_parent_id << std::endl;
               }
 
               // Step 2: Store chirp id : fresh reply vector
@@ -106,6 +107,19 @@
 
     Status KeyValueStoreServiceImpl::get(ServerContext* context,
                     ServerReaderWriter<GetReply, GetRequest>* stream) {
+      // Get type from metadata
+      std::multimap< grpc::string_ref, grpc::string_ref > metadata = context->client_metadata();
+      std::string type;
+      auto data_iter = metadata.find("type");
+        if(data_iter != metadata.end())
+          {
+            //Found type;
+            std::string s((data_iter->second).data(), (data_iter->second).length());
+            type = s;
+          } else {
+            std::cout << "Error: No metadata." << std::endl;
+          }
+      
 
       std::vector<GetRequest> received_requests;
       GetRequest request_catcher;
@@ -123,17 +137,39 @@
         } else {
           //element found;
 
-          // DFSSearch that returns vector of entire thread (of chirp bytes)
-          std::vector<std::string>* reply_thread_vec = new std::vector<std::string>();
-          std::vector<std::string>* full_thread_vec;
-          HelperFunctions helper;
-          full_thread_vec = helper.DFSReplyThread(chirpMap, reply_thread_vec, key_requested);
-          GetReply reply;
-          std::string value_requested;
-          for(int i = 0; i < full_thread_vec->size(); i++){
-            value_requested = full_thread_vec->at(i);
-            reply.set_value(value_requested);
-            stream->Write(reply);
+          //TDOD: Depending on type, modify GET behaviour (read vs. monitor)
+
+          if(type == "read"){
+            // DFSSearch that returns vector of entire thread (of chirp bytes)
+            std::vector<std::string>* reply_thread_vec = new std::vector<std::string>();
+            std::vector<std::string>* full_thread_vec;
+            HelperFunctions helper;
+            full_thread_vec = helper.DFSReplyThread(chirpMap, reply_thread_vec, key_requested);
+            GetReply reply;
+            std::string value_requested;
+            for(int i = 0; i < full_thread_vec->size(); i++){
+              value_requested = full_thread_vec->at(i);
+              reply.set_value(value_requested);
+              stream->Write(reply);
+            }
+          } else if(type == "monitor"){
+            //TODO
+              auto it = chirpMap.find(key_requested);
+              if(it != chirpMap.end())
+              {
+                  std::vector<std::string> follow_list = it->second;
+                  GetReply reply;
+                  for(int i = 0; i < follow_list.size(); i++){
+                  std::string value_requested = follow_list.at(i);
+                  reply.set_value(value_requested);
+                  stream->Write(reply);
+                }
+              } else {
+                std::cout << "Error: Username doesn't exist." << std::endl;
+              }
+
+          } else {
+            std::cout << "Error: Invalid type at KVS Server READ" << std::endl;
           }
           // delete reply_thread_vec;
         }

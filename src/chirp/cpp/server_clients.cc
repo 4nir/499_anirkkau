@@ -61,11 +61,16 @@ std::string KeyValueStoreClient::put(const std::string& key, const std::string& 
 }
 
 // rpc get
-std::vector<Chirp> KeyValueStoreClient::get(const std::string& key) {
+std::vector<Chirp> KeyValueStoreClient::get(const std::string& key, const std::string& type) {
 
   // Context for the client. It could be used to convey extra information to
   // the server and/or tweak certain RPC behaviors.
   ClientContext context;
+  if(type == "read"){
+    context.AddMetadata("type", "read");
+  } else {
+    std::cout << "Error: Invalid metadata at KVS Client GET" << std::endl;
+  }
 
 
   std::shared_ptr<ClientReaderWriter<GetRequest, GetReply> > stream(
@@ -105,6 +110,53 @@ std::vector<Chirp> KeyValueStoreClient::get(const std::string& key) {
     std::cout << status.error_code() << ": " << status.error_message()
             << std::endl;
     return chirp_thread;
+  }
+}
+
+std::vector<std::string> KeyValueStoreClient::getFollowingList(const std::string& key, const std::string& type){
+  //TODO: Return list vector of followers
+  // Context for the client. It could be used to convey extra information to
+  // the server and/or tweak certain RPC behaviors.
+  ClientContext context;
+  if(type == "monitor"){
+    context.AddMetadata("type", "monitor");
+  } else {
+    std::cout << "Error: Invalid metadata at KVS Client getFollowingList" << std::endl;
+  }
+
+
+  std::shared_ptr<ClientReaderWriter<GetRequest, GetReply> > stream(
+  stub_->get(&context));
+
+  std::vector<GetRequest> requests;
+  GetRequest r1 = MakeGetRequest(key);
+  requests.push_back(r1);
+
+  std::thread writer([&]() {
+        
+        for (const GetRequest& req : requests) {
+          stream->Write(req);
+        }
+        stream->WritesDone();
+  });
+
+  // Container for the data we expect from the server.
+  GetReply reply;
+  std::vector<std::string> following_list;
+  while (stream->Read(&reply)) {
+    following_list.push_back(reply.value());
+  }
+
+  writer.join();
+  Status status = stream->Finish();
+  
+  // Act upon its status.
+  if (status.ok()) {
+    return following_list;
+  } else {
+    std::cout << status.error_code() << ": " << status.error_message()
+            << std::endl;
+    return following_list;
   }
 }
 
@@ -245,7 +297,43 @@ std::string KeyValueStoreClient::deletekey(const std::string& key) {
     }
 
     std::string ServiceLayerClient::monitor(const std::string& username){
+      // Context for the client. It could be used to convey extra information to
+      // the server and/or tweak certain RPC behaviors.
+      ClientContext context;
 
+
+      // Data we are sending to the server.
+      MonitorRequest request;
+      request.set_username(username);
+
+      // Container for the data we expect from the server.
+      MonitorReply reply;
+
+      std::unique_ptr<ClientReader<MonitorReply> > reader( 
+        stub_->monitor(&context, request));
+
+        
+      while (reader->Read(&reply)) {
+        std::string chirp_bytes = reply.chirp_bytes();
+        if(chirp_bytes != ""){
+          Chirp chirp_catcher;
+          chirp_catcher.ParseFromString(chirp_bytes);
+          std::string chirp_text = chirp_catcher.text();
+          std::cout << "New chirp: " << chirp_text << std::endl;
+        } else {
+          std::cout << "User isn't a follower. " << std::endl;
+        }
+      }
+      Status status = reader->Finish();
+
+      // Act upon its status.
+      if (status.ok()) {
+        return "RPC succeeded";
+      } else {
+        std::cout << status.error_code() << ": " << status.error_message()
+                  << std::endl;
+        return "RPC failed";
+      }
     }
 
 //--------------------------HelperFunctions--------------------------//
