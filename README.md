@@ -7,8 +7,8 @@ Email: anirkkau@usc.edu
   config.vm.box = "ubuntu/bionic64"
 
   Tools & Libraries:
-  grpc (installed according to official docs)
-  gflags (installed according to official docs)
+  - grpc (installed according to official docs)
+  - gflags (installed according to official docs)
 
 2) Running Chirp
 
@@ -19,9 +19,9 @@ Email: anirkkau@usc.edu
   After which, three executables will be generated: backend_store_server, service_layer_server, command_line
 
   You will need to run each in a separate terminal window, as follows:
-  $ ./backend_store_server
-  $ ./service_layer_server
-  $ ./command_line <flags>
+  - $ ./backend_store_server
+  - $ ./service_layer_server
+  - $ ./command_line <flags>
 
   To test chirp() functionality:
   Chirp IDs are generated chronologically with the format "cid//#",
@@ -33,6 +33,6 @@ Email: anirkkau@usc.edu
    
 3) General Notes: 
 
-  -Monitor only partially works - running it will notify you if the last chirp is from someone you follow. I will
+ - Monitor only partially works - running it will notify you if the last chirp is from someone you follow. I will
    have to set up a loop so it calls periodically while still allowing concurrent users. 
-  -If you don't see output in the command_line window, you might find responses in the other two servers.
+ - If you don't see output in the command_line window, you might find responses in the other two servers.
