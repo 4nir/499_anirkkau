@@ -45,7 +45,7 @@ Status ServiceLayerServiceImpl::chirp(ServerContext* context, const ChirpRequest
   std::string type = "chirp";
   store_client.put(chirp_id, chirp_str, type);
 
-  // Push into chirp_log. Every chirp gets logged
+  // Push into chirp_log. Every chirp gets logged in the Service Layer (for Monitor)
   chirp_log.push_back(chirp_str);
   
   return Status::OK;
@@ -91,7 +91,7 @@ Status ServiceLayerServiceImpl::read(ServerContext* context, const ReadRequest* 
 }
 
 Status ServiceLayerServiceImpl::monitor(ServerContext* context, const MonitorRequest* request,
-                    ServerWriter<MonitorReply>* writer){ //TODO: Confirm MonitorReply
+                    ServerWriter<MonitorReply>* writer){
   std::string type = "monitor";
 
   KeyValueStoreClient store_client(grpc::CreateChannel("localhost:50000", grpc::InsecureChannelCredentials()));
@@ -104,20 +104,16 @@ Status ServiceLayerServiceImpl::monitor(ServerContext* context, const MonitorReq
   Chirp chirp_obj;
   chirp_obj.ParseFromString(latest_chirp_bytes);
   std::string latest_chirper = chirp_obj.username();
-  std::cout << "Latest chirper: " << latest_chirper << std::endl;
+  // std::cout << "Latest chirper: " << latest_chirper << std::endl;
   
   // Check if user follows latest chirper
   for(std::string follow : following_list){
     if(follow == latest_chirper){
-      std::cout << "New chirp!" << std::endl;
       MonitorReply reply;
       reply.set_chirp_bytes(latest_chirp_bytes);
       writer->Write(reply);
     }
   }
-  // MonitorReply reply;
-  // reply.set_chirp_bytes("");
-  // writer->Write(reply);
   
   return Status::OK;
 }

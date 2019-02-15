@@ -45,39 +45,39 @@
             std::cout << "Error: Username already exists." << std::endl;
           }
       } else if(type == "chirp") {
-            //If Chirp ID (CID)
-            Chirp chirp_catcher;
-            chirp_catcher.ParseFromString(value);
-            std::string chirp_id = chirp_catcher.id();
-            std::string chirp_parent_id = chirp_catcher.parent_id();
-            // std::cout << "chirp_catcher.id(): " << chirp_id << std::endl;
-            // std::cout << "chirp_catcher.parent_id(): " << chirp_parent_id << std::endl;
+        //If Chirp ID (CID)
+        Chirp chirp_catcher;
+        chirp_catcher.ParseFromString(value);
+        std::string chirp_id = chirp_catcher.id();
+        std::string chirp_parent_id = chirp_catcher.parent_id();
+        // std::cout << "chirp_catcher.id(): " << chirp_id << std::endl;
+        // std::cout << "chirp_catcher.parent_id(): " << chirp_parent_id << std::endl;
 
-            // For chirps in chirpMap, index 0 contains byte string form, rest are serialized chirp replies
+        // For chirps in chirpMap, index 0 contains byte string form, rest are serialized chirp replies
 
-            if(chirp_parent_id == "0"){                               // Root chirp TODO: Change to null?
+        if(chirp_parent_id == "0"){                               // Root chirp 
 
-              // Store chirp id : fresh reply vector
-              std::vector<std::string> value_list;
-              value_list.push_back(value);
-              chirpMap.insert(std::make_pair(key, value_list));
-              std::cout << "Inserted Key: " << key  << std::endl;
-            } else {                                                   //  Reply chirp
-              // Step 1: Append chirp bytes to parent chirp's reply vector
-              auto it = chirpMap.find(chirp_parent_id);
-              if(it != chirpMap.end())
-              {
-                (it->second).push_back(key);   //Q: Is this right?
-              } else {
-                std::cout << "Error: Parent ID not found in map." << std::endl;
-              }
+          // Store chirp id : fresh reply vector
+          std::vector<std::string> value_list;
+          value_list.push_back(value);
+          chirpMap.insert(std::make_pair(key, value_list));
+          std::cout << "Inserted Key: " << key  << std::endl;
+        } else {                                                   //  Reply chirp
+          // Step 1: Append chirp bytes to parent chirp's reply vector
+          auto it = chirpMap.find(chirp_parent_id);
+          if(it != chirpMap.end())
+          {
+            (it->second).push_back(key);
+          } else {
+            std::cout << "Error: Parent ID not found in map." << std::endl;
+          }
 
-              // Step 2: Store chirp id : fresh reply vector
-              std::vector<std::string> value_list;
-              value_list.push_back(value);
-              chirpMap.insert(std::make_pair(key, value_list));
-              std::cout << "Inserted Key: " << key  << std::endl;
-            }
+          // Step 2: Store chirp id : fresh reply vector
+          std::vector<std::string> value_list;
+          value_list.push_back(value);
+          chirpMap.insert(std::make_pair(key, value_list));
+          std::cout << "Inserted Key: " << key  << std::endl;
+        }
       } else if (type == "follow") { // otherwise, it's an append to a following list
           std::string user_to_follow = value;
           auto it = chirpMap.find(key);
@@ -153,7 +153,6 @@
               stream->Write(reply);
             }
           } else if(type == "monitor"){
-            //TODO
               auto it = chirpMap.find(key_requested);
               if(it != chirpMap.end())
               {

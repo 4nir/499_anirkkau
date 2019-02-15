@@ -114,7 +114,6 @@ std::vector<Chirp> KeyValueStoreClient::get(const std::string& key, const std::s
 }
 
 std::vector<std::string> KeyValueStoreClient::getFollowingList(const std::string& key, const std::string& type){
-  //TODO: Return list vector of followers
   // Context for the client. It could be used to convey extra information to
   // the server and/or tweak certain RPC behaviors.
   ClientContext context;
@@ -312,23 +311,25 @@ std::string KeyValueStoreClient::deletekey(const std::string& key) {
       std::unique_ptr<ClientReader<MonitorReply> > reader( 
         stub_->monitor(&context, request));
 
-        
+      std::string chirp_text;
       while (reader->Read(&reply)) {
         std::string chirp_bytes = reply.chirp_bytes();
         if(chirp_bytes != ""){
           Chirp chirp_catcher;
           chirp_catcher.ParseFromString(chirp_bytes);
-          std::string chirp_text = chirp_catcher.text();
-          std::cout << "New chirp: " << chirp_text << std::endl;
+          chirp_text = chirp_catcher.text();
+          // std::cout << "New chirp: " << chirp_text << std::endl;
+          
         } else {
-          std::cout << "User isn't a follower. " << std::endl;
+          chirp_text = "";
+          // std::cout << "User isn't a follower. " << std::endl;
         }
       }
       Status status = reader->Finish();
 
       // Act upon its status.
       if (status.ok()) {
-        return "RPC succeeded";
+        return chirp_text;
       } else {
         std::cout << status.error_code() << ": " << status.error_message()
                   << std::endl;
