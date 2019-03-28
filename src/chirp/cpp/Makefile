@@ -43,4 +43,4 @@ key_value_store_tests: key_value_store_tests.cc key_value_store.o
 	$(PROTOC) -I $(PROTOS_PATH) --cpp_out=. $<
 
 clean:
-	rm -f *.o *.pb.cc *.pb.h command_line server_clients backend_store_server service_layer_server
+	rm -f *.o *.pb.cc *.pb.h command_line server_clients backend_store_server service_layer_server key_value_store_tests
