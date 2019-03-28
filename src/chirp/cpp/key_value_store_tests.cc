@@ -4,7 +4,7 @@
 
 // adds a value to the KeyValueStore
 TEST(PutGetTest, Simple) {
-  KeyValueStore test_store;
+  KeyValueStoreClass test_store;
   test_store.Put("1testkey", "1testvalue");
 
   const std::vector<std::string>& values = test_store.Get("1testkey");

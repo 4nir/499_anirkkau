@@ -48,6 +48,7 @@ int main(int argc, char** argv) {
   if(FLAGS_command.find("register") != std::string::npos){
       std::string output = service_client.registeruser(argv[1]);
       std::cout << output << std::endl;
+      //TODO: output register failed if username already exists
       return 0;
    }
 

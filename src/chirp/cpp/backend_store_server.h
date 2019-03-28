@@ -23,8 +23,7 @@ class KeyValueStoreServiceImpl final : public KeyValueStore::Service {
     Status deletekey(ServerContext* context, const DeleteRequest* request,
                     DeleteReply* reply);
   private:
-    std::map<std::string, std::vector<std::string> > chirpMap;
-    KeyValueStore store_;
+    KeyValueStoreClass store_;
 };
 
 #endif //BACKEND_SERVER_H

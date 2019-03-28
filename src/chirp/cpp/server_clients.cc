@@ -207,11 +207,11 @@ std::string KeyValueStoreClient::deletekey(const std::string& key) {
 
       // Act upon its status.
       if (status.ok()) {
-        return username + " has been registered.";
+        return "Attempting to register " + username + "...";
       } else {
         std::cout << status.error_code() << ": " << status.error_message()
                   << std::endl;
-        return "RPC failed";
+        return "Error: Usernma already exists.";
       }
     }
 

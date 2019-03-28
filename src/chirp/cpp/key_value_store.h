@@ -8,10 +8,10 @@
 #include <grpcpp/grpcpp.h>
 #include "backend_store.grpc.pb.h"
 
-class KeyValueStore {
+class KeyValueStoreClass {
   public:
-  KeyValueStore(){};
-  ~KeyValueStore(){};
+  KeyValueStoreClass(){};
+  ~KeyValueStoreClass(){};
 
   void Put(const std::string &key, const std::string &value);
 

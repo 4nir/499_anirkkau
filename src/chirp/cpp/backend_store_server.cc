@@ -18,7 +18,9 @@
       std::multimap< grpc::string_ref, grpc::string_ref > metadata = context->client_metadata();
       std::string type;
 
-      // Get type from metadata
+      // Get type from metadata.
+      //The metadata will tell the server how to proceed with key-value pair it received.
+      //There are 3 types: "register", "follow", and "chirp" 
       auto data_iter = metadata.find("type");
         if(data_iter != metadata.end())
           {
@@ -28,76 +30,65 @@
           } else {
             std::cout << "Error: No metadata." << std::endl;
           }
-      // std::cout << "PUT Metadata type: " << type << std::endl;
 
       if(type == "register"){
 
       //If User (USR)
-        auto it = chirpMap.find(key);
-        if(it == chirpMap.end())
-          {
-            //Username doesn't already exist;
-            std::vector<std::string> value_list;
-            chirpMap.insert(std::make_pair(key, value_list));
-            std::cout << "Registered new user: " << key << std::endl;
-            
+
+        if(!store_.KeyExists(key)){
+          store_.Put(key, "");
+          std::cout << "Registered new user: " << key << std::endl;
+        } else {
+          std::cout << "Error: Username already exists." << std::endl;
+        }
+
+      } else if (type == "follow") { // otherwise, it's an append to a following list
+          std::string user_to_follow = value;
+
+          if(store_.KeyExists(key)){
+            store_.Put(key, user_to_follow);
+
+            // // Test following list TODO: Delete this 
+            // std::vector<std::string> value_list = store_.Get(key);
+            // std::cout << "User " << key << " now following: ";
+            // for(int i = 0; i < value_list.size(); i++){
+            //   std::cout << value_list.at(i) << " ";
+            // }
+            // std::cout << "\n";
+
           } else {
-            std::cout << "Error: Username already exists." << std::endl;
+            std::cout << "Error: Username doesn't exist." << std::endl;
           }
+
       } else if(type == "chirp") {
-        //If Chirp ID (CID)
+
         Chirp chirp_catcher;
         chirp_catcher.ParseFromString(value);
         std::string chirp_id = chirp_catcher.id();
         std::string chirp_parent_id = chirp_catcher.parent_id();
-        // std::cout << "chirp_catcher.id(): " << chirp_id << std::endl;
-        // std::cout << "chirp_catcher.parent_id(): " << chirp_parent_id << std::endl;
 
-        // For chirps in chirpMap, index 0 contains byte string form, rest are serialized chirp replies
+        // For chirps in store_, index 0 contains byte string form, rest are serialized chirp replies
 
-        if(chirp_parent_id == "0"){                               // Root chirp 
-
-          // Store chirp id : fresh reply vector
-          std::vector<std::string> value_list;
-          value_list.push_back(value);
-          chirpMap.insert(std::make_pair(key, value_list));
+        if(chirp_parent_id == "0"){ // Root chirp 
+          store_.Put(key, value);
           std::cout << "Inserted Key: " << key  << std::endl;
-        } else {                                                   //  Reply chirp
+
+        } else { //  Reply chirp
+
           // Step 1: Append chirp bytes to parent chirp's reply vector
-          auto it = chirpMap.find(chirp_parent_id);
-          if(it != chirpMap.end())
-          {
-            (it->second).push_back(key);
+          if(store_.KeyExists(chirp_parent_id)){
+            store_.Put(chirp_parent_id, key);
+            
           } else {
             std::cout << "Error: Parent ID not found in map." << std::endl;
           }
 
           // Step 2: Store chirp id : fresh reply vector
-          std::vector<std::string> value_list;
-          value_list.push_back(value);
-          chirpMap.insert(std::make_pair(key, value_list));
-          std::cout << "Inserted Key: " << key  << std::endl;
-        }
-      } else if (type == "follow") { // otherwise, it's an append to a following list
-          std::string user_to_follow = value;
-          auto it = chirpMap.find(key);
-          if(it != chirpMap.end())
-          {
-            std::vector<std::string> value_list = it->second;
-            value_list.push_back(user_to_follow);
-            chirpMap.erase(key);
-            chirpMap.insert(std::make_pair(key, value_list));
+            //Note: If Parent ID is not valid, the chirp is posted as a Root Chirp.
 
-            // Test following list
-            std::cout << "User " << key << " now following: ";
-            for(int i = 0; i < value_list.size(); i++){
-              std::cout << value_list.at(i) << " ";
-            }
-            std::cout << "\n";
-            
-          } else {
-            std::cout << "Error: Username doesn't exist." << std::endl;
-          }
+            store_.Put(key, value);
+            std::cout << "Inserted Key: " << key  << std::endl;
+        }
 
       } else {
         std::cout << "Error: Invalid type @ store_server PUT" << std::endl;
@@ -107,6 +98,10 @@
 
     Status KeyValueStoreServiceImpl::get(ServerContext* context,
                     ServerReaderWriter<GetReply, GetRequest>* stream) {
+      
+      //Grab current state of KeyValueStoreClass's internal map
+      std::map<std::string, std::vector<std::string> > chirp_map = store_.ReturnStoreMap();
+
       // Get type from metadata
       std::multimap< grpc::string_ref, grpc::string_ref > metadata = context->client_metadata();
       std::string type;
@@ -129,22 +124,20 @@
 
       for (GetRequest req : received_requests) {
         std::string key_requested = req.key();
-        std::map<std::string, std::vector<std::string> >::iterator it = chirpMap.find(key_requested);
+        std::map<std::string, std::vector<std::string> >::iterator it = chirp_map.find(key_requested);
 
-        if(it == chirpMap.end())
+        if(it == chirp_map.end())
         {
           std::cout << "Error: Key not found. " << std::endl;
         } else {
           //element found;
-
-          //TDOD: Depending on type, modify GET behaviour (read vs. monitor)
 
           if(type == "read"){
             // DFSSearch that returns vector of entire thread (of chirp bytes)
             std::vector<std::string>* reply_thread_vec = new std::vector<std::string>();
             std::vector<std::string>* full_thread_vec;
             HelperFunctions helper;
-            full_thread_vec = helper.DFSReplyThread(chirpMap, reply_thread_vec, key_requested);
+            full_thread_vec = helper.DFSReplyThread(chirp_map, reply_thread_vec, key_requested);
             GetReply reply;
             std::string value_requested;
             for(int i = 0; i < full_thread_vec->size(); i++){
@@ -153,8 +146,8 @@
               stream->Write(reply);
             }
           } else if(type == "monitor"){
-              auto it = chirpMap.find(key_requested);
-              if(it != chirpMap.end())
+              auto it = chirp_map.find(key_requested);
+              if(it != chirp_map.end())
               {
                   std::vector<std::string> follow_list = it->second;
                   GetReply reply;
@@ -179,7 +172,7 @@
 
     Status KeyValueStoreServiceImpl::deletekey(ServerContext* context, const DeleteRequest* request,
                     DeleteReply* reply) {
-      chirpMap.erase(request->key());
+      store_.DeleteKey(request->key()); //TODO: Test this
       return Status::OK;
     }
 
