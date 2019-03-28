@@ -14,6 +14,7 @@
 class KeyValueStoreServiceImpl final : public KeyValueStore::Service {
   
   public:
+  
     Status put(ServerContext* context, const PutRequest* request,
                     PutReply* reply);
     Status get(ServerContext* context,
@@ -24,4 +25,4 @@ class KeyValueStoreServiceImpl final : public KeyValueStore::Service {
     std::map<std::string, std::vector<std::string> > chirpMap;
 };
 
-#endif
+#endif //BACKEND_SERVER_H

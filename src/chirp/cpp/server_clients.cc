@@ -60,7 +60,7 @@ std::string KeyValueStoreClient::put(const std::string& key, const std::string& 
   }
 }
 
-// rpc get
+// rpc get Inplementation
 std::vector<Chirp> KeyValueStoreClient::get(const std::string& key, const std::string& type) {
 
   // Context for the client. It could be used to convey extra information to
@@ -339,7 +339,7 @@ std::string KeyValueStoreClient::deletekey(const std::string& key) {
 
 //--------------------------HelperFunctions--------------------------//
 
-int HelperFunctions::chirp_count = 0;
+int HelperFunctions::chirp_count_ = 0;
 
 std::vector<std::string>* HelperFunctions::DFSReplyThread(std::map<std::string, std::vector<std::string> > chirpMap,
                                              std::vector<std::string> *reply_thread_vec,
@@ -365,9 +365,9 @@ std::vector<std::string>* HelperFunctions::DFSReplyThread(std::map<std::string, 
 }
 
 std::string HelperFunctions::GenerateChirpID(){
-  chirp_count++;
+  chirp_count_++;
   std::string CurrentClientID = "cid//";
-  std::string count_str = std::to_string(chirp_count);
+  std::string count_str = std::to_string(chirp_count_);
   CurrentClientID += count_str;
 
   return CurrentClientID;

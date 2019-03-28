@@ -13,8 +13,6 @@
 #include "backend_store_server.h"
 #include "server_clients.h"
 
-using namespace std;
-
 DEFINE_string(user, "", "username");
 DEFINE_bool(register, false, "user wants to register");
 DEFINE_bool(follow, false, "user wants to follow");
@@ -47,14 +45,14 @@ int main(int argc, char** argv) {
   if (FLAGS_monitor)
      FLAGS_command += "monitor";   // implied by --monitor
 
-  if(FLAGS_command.find("register") != string::npos){
+  if(FLAGS_command.find("register") != std::string::npos){
       std::string output = service_client.registeruser(argv[1]);
       std::cout << output << std::endl;
       return 0;
    }
 
   if(FLAGS_user != ""){
-    if(FLAGS_command.find("chirp") != string::npos){
+    if(FLAGS_command.find("chirp") != std::string::npos){
       if((!FLAGS_reply) && argc == 2){
         // Root Chirp
       std::cout << "Root chirping" << std::endl;
@@ -75,7 +73,7 @@ int main(int argc, char** argv) {
         return -1;
       }
   }
-    if(FLAGS_command.find("follow") != string::npos){
+    if(FLAGS_command.find("follow") != std::string::npos){
         if(argc == 2){
           std::string username = FLAGS_user;
           std::string output = service_client.follow(username, argv[1]);
@@ -83,12 +81,12 @@ int main(int argc, char** argv) {
         }
     }
 
-    if(FLAGS_command.find("read") != string::npos){
+    if(FLAGS_command.find("read") != std::string::npos){
         std::string output = service_client.read(argv[1]);
         std::cout << output << std::endl;
     }
 
-    if(FLAGS_command.find("monitor") != string::npos){
+    if(FLAGS_command.find("monitor") != std::string::npos){
       std::string username = FLAGS_user;
       std::string latest_chirp = "";
       while(1){

@@ -54,6 +54,7 @@ using chirp::ReadReply;
 using chirp::MonitorRequest;
 using chirp::MonitorReply;
 
+//Helper functions that aid internal functionality
 class HelperFunctions {
   public:
      std::vector<std::string>* DFSReplyThread(std::map<std::string, std::vector<std::string> > chirpMap,
@@ -61,7 +62,7 @@ class HelperFunctions {
                                              std::string chirp_id);
     std::string GenerateChirpID();
   private:
-     static int chirp_count;
+     static int chirp_count_;
 };
 
 class KeyValueStoreClient {
@@ -85,7 +86,7 @@ class KeyValueStoreClient {
 
 class ServiceLayerClient {
   public:
-    int chirp_count = 0;
+    int chirp_count_ = 0;
     std::string registeruser(const std::string& username);
     std::string chirp(const std::string& username, const std::string& text, 
                       const std::string& parent_id);
