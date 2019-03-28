@@ -21,6 +21,8 @@ class KeyValueStore {
 
   bool KeyExists(const std::string &key);
 
+  std::map<std::string, std::vector<std::string> > ReturnStoreMap();
+
  private:
   std::map<std::string, std::vector<std::string> > chirp_map_;
   /*

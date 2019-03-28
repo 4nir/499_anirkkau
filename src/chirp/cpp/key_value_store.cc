@@ -24,3 +24,7 @@ bool KeyValueStore::KeyExists(const std::string &key){
   }
   return false;
 }
+
+std::map<std::string, std::vector<std::string> > KeyValueStore::ReturnStoreMap(){
+  return chirp_map_;
+}

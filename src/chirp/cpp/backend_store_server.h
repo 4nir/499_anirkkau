@@ -10,6 +10,7 @@
 #include <grpcpp/server_context.h>
 #include "backend_store.grpc.pb.h"
 #include "server_clients.h"
+#include "key_value_store.h"
 
 class KeyValueStoreServiceImpl final : public KeyValueStore::Service {
   
@@ -23,6 +24,7 @@ class KeyValueStoreServiceImpl final : public KeyValueStore::Service {
                     DeleteReply* reply);
   private:
     std::map<std::string, std::vector<std::string> > chirpMap;
+    KeyValueStore store_;
 };
 
 #endif //BACKEND_SERVER_H
