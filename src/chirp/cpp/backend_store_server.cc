@@ -7,7 +7,7 @@
 #include <grpcpp/server_context.h>
 #include "backend_store.grpc.pb.h"
 #include "backend_store_server.h"
-#include "server_clients.h"
+#include "service_layer_client.h"
 
 // Logic and data behind the server's behaviour - add implementation here.
     Status KeyValueStoreServiceImpl::put(ServerContext* context, const PutRequest* request,
@@ -40,24 +40,26 @@
           std::cout << "Registered new user: " << key << std::endl;
         } else {
           std::cout << "Error: Username already exists." << std::endl;
+          return Status::CANCELLED;
         }
 
       } else if (type == "follow") { // otherwise, it's an append to a following list
           std::string user_to_follow = value;
 
-          if(store_.KeyExists(key)){
+          if(store_.KeyExists(key) && store_.KeyExists(user_to_follow)){
             store_.Put(key, user_to_follow);
 
-            // // Test following list TODO: Delete this 
-            // std::vector<std::string> value_list = store_.Get(key);
-            // std::cout << "User " << key << " now following: ";
-            // for(int i = 0; i < value_list.size(); i++){
-            //   std::cout << value_list.at(i) << " ";
-            // }
-            // std::cout << "\n";
-
+            // Test following list TODO: Delete this 
+            std::vector<std::string> value_list = store_.Get(key);
+            std::cout << "User " << key << " now following: ";
+            for(int i = 0; i < value_list.size(); i++){
+              std::cout << value_list.at(i) << " ";
+            }
+            std::cout << "\n";
+            return Status::OK;
           } else {
-            std::cout << "Error: Username doesn't exist." << std::endl;
+            std::cout << "Error: user or follower does not exist." << std::endl;
+            return Status::CANCELLED;
           }
 
       } else if(type == "chirp") {
@@ -129,6 +131,7 @@
         if(it == chirp_map.end())
         {
           std::cout << "Error: Key not found. " << std::endl;
+          // return Status::CANCELLED; //TODO
         } else {
           //element found;
 
@@ -136,8 +139,7 @@
             // DFSSearch that returns vector of entire thread (of chirp bytes)
             std::vector<std::string>* reply_thread_vec = new std::vector<std::string>();
             std::vector<std::string>* full_thread_vec;
-            HelperFunctions helper;
-            full_thread_vec = helper.DFSReplyThread(chirp_map, reply_thread_vec, key_requested);
+            full_thread_vec = DFSReplyThread(chirp_map, reply_thread_vec, key_requested);
             GetReply reply;
             std::string value_requested;
             for(int i = 0; i < full_thread_vec->size(); i++){
@@ -175,6 +177,29 @@
       store_.DeleteKey(request->key()); //TODO: Test this
       return Status::OK;
     }
+
+    std::vector<std::string>* KeyValueStoreServiceImpl::DFSReplyThread(std::map<std::string, std::vector<std::string> > chirpMap,
+                                             std::vector<std::string> *reply_thread_vec,
+                                             std::string chirp_id){
+   auto it = chirpMap.find(chirp_id);
+   if(it != chirpMap.end()){
+     std::vector<std::string> reply_vec = it->second;
+     // Add chirp bytes to reply_thread_vec (Index 0)
+     reply_thread_vec->push_back(reply_vec.at(0));
+
+     if(reply_vec.size() > 1){ // Chirp has replies
+       for(int i = 1; i < reply_vec.size(); i++){ // Skip first index
+          reply_thread_vec = DFSReplyThread(chirpMap, reply_thread_vec, reply_vec.at(i));
+       }
+       return reply_thread_vec;
+
+     } else {                  // End of sub-thread
+       return reply_thread_vec;
+     }
+   } else {
+     std::cout << "Error: chirp_id not found in chirpMap" << std::endl;
+   }                                          
+}
 
 void RunServer() {
   std::string server_address("0.0.0.0:50000");

@@ -11,7 +11,7 @@
 #include <grpcpp/create_channel.h>
 #include "backend_store.grpc.pb.h"
 #include "backend_store_server.h"
-#include "server_clients.h"
+#include "service_layer_client.h"
 
 DEFINE_string(user, "", "username");
 DEFINE_bool(register, false, "user wants to register");
@@ -29,7 +29,6 @@ int main(int argc, char** argv) {
     return -1;
   }
 
-  HelperFunctions helper;
   ServiceLayerClient service_client(grpc::CreateChannel(
   "localhost:50002", grpc::InsecureChannelCredentials())); 
 

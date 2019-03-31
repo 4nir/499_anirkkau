@@ -8,7 +8,8 @@
 #include "backend_store.grpc.pb.h"
 #include "service_layer.grpc.pb.h"
 #include "service_layer_server.h"
-#include "server_clients.h"
+#include "service_layer_client.h"
+#include "backend_store_client.h"
 
 // Logic and data behind the server's behaviour - add implementation here.
 Status ServiceLayerServiceImpl::registeruser(ServerContext* context, const RegisterRequest* request,
@@ -19,18 +20,21 @@ Status ServiceLayerServiceImpl::registeruser(ServerContext* context, const Regis
   std::string new_user = request->username();
 
   // "" in the value field signals to the KVS server it's a new user
-  store_client.put(new_user, "register", "register");
-  return Status::OK;
+  std::string response = store_client.put(new_user, "register", "register");
+  if(response == "success"){
+    return Status::OK;
+  } else {
+    return Status::CANCELLED;
+  }
 }
 
 Status ServiceLayerServiceImpl::chirp(ServerContext* context, const ChirpRequest* request,
                     ChirpReply* reply) {
 
   KeyValueStoreClient store_client(grpc::CreateChannel("localhost:50000", grpc::InsecureChannelCredentials()));
-  HelperFunctions helper;
   std::string chirp_username = request->username();
   std::string chirp_text = request->text();
-  std::string chirp_id = helper.GenerateChirpID();
+  std::string chirp_id = GenerateChirpID();
   std::string chirp_parent_id = request->parent_id();
 
   // Generate Chirp
@@ -45,9 +49,10 @@ Status ServiceLayerServiceImpl::chirp(ServerContext* context, const ChirpRequest
   std::string type = "chirp";
   store_client.put(chirp_id, chirp_str, type);
 
-  // Push into chirp_log. Every chirp gets logged in the Service Layer (for Monitor)
-  chirp_log.push_back(chirp_str);
+  // Push into chirp_log_. Every chirp gets logged in the Service Layer (for Monitor)
+  chirp_log_.push_back(chirp_str);
   
+  //TODO: Add Status::CANCELLED?
   return Status::OK;
 }
 
@@ -61,8 +66,13 @@ Status ServiceLayerServiceImpl::follow(ServerContext* context, const FollowReque
 
   // "" in the value field signals to the KVS server it's a new user
   std::string type = "follow";
-  store_client.put(username, to_follow, "follow");
-  return Status::OK;
+  std::string response = store_client.put(username, to_follow, "follow");
+
+  if(response == "success"){
+    return Status::OK;
+  } else {
+    return Status::CANCELLED;
+  }
 }
 
 Status ServiceLayerServiceImpl::read(ServerContext* context, const ReadRequest* request,
@@ -74,6 +84,7 @@ Status ServiceLayerServiceImpl::read(ServerContext* context, const ReadRequest* 
 
   std::vector<Chirp> chirp_Obj_thread;
   chirp_Obj_thread = store_client.get(chirp_id, type);
+
   std::string chirp_thread = "";
   //Loop over 
   for (Chirp chirp : chirp_Obj_thread){
@@ -99,16 +110,15 @@ Status ServiceLayerServiceImpl::monitor(ServerContext* context, const MonitorReq
 
   std::vector<std::string> following_list = store_client.getFollowingList(username, type);
   //If latest chirp's username is in following_list return chirp
-  int last_index = chirp_log.size() - 1;
+  int last_index = chirp_log_.size() - 1;
   if(last_index < 0){
     std::cout << "Error: Nobody has chirped yet!" << std::endl;
     return Status::OK;
   }
-  std::string latest_chirp_bytes = chirp_log.at(last_index);
+  std::string latest_chirp_bytes = chirp_log_.at(last_index);
   Chirp chirp_obj;
   chirp_obj.ParseFromString(latest_chirp_bytes);
   std::string latest_chirper = chirp_obj.username();
-  // std::cout << "Latest chirper: " << latest_chirper << std::endl;
   
   // Check if user follows latest chirper
   for(std::string follow : following_list){
@@ -120,6 +130,15 @@ Status ServiceLayerServiceImpl::monitor(ServerContext* context, const MonitorReq
   }
   
   return Status::OK;
+}
+
+std::string ServiceLayerServiceImpl::GenerateChirpID(){
+  chirp_count_++;
+  std::string CurrentClientID = "cid//";
+  std::string count_str = std::to_string(chirp_count_);
+  CurrentClientID += count_str;
+
+  return CurrentClientID;
 }
 
 

@@ -1,5 +1,5 @@
-#ifndef SERVER_CLIENTS_H
-#define SERVER_CLIENTS_H
+#ifndef SERVICE_LAYER_CLIENT_H
+#define SERVICE_LAYER_CLIENT_H
 
 #include <iostream>
 #include <random>
@@ -54,39 +54,9 @@ using chirp::ReadReply;
 using chirp::MonitorRequest;
 using chirp::MonitorReply;
 
-//Helper functions that aid internal functionality
-class HelperFunctions {
-  public:
-     std::vector<std::string>* DFSReplyThread(std::map<std::string, std::vector<std::string> > chirpMap,
-                                             std::vector<std::string> *reply_thread_vec,
-                                             std::string chirp_id);
-    std::string GenerateChirpID();
-  private:
-     static int chirp_count_;
-};
-
-class KeyValueStoreClient {
-  public:
-    std::string put(const std::string& key, const std::string& value, const std::string& type);
-
-    std::vector<Chirp> get(const std::string& key, const std::string& type);
-
-    std::vector<std::string> getFollowingList(const std::string& key, const std::string& type);
-
-    std::string deletekey(const std::string& key);
-
-    GetRequest MakeGetRequest(const std::string& key);
-
-    KeyValueStoreClient(std::shared_ptr<Channel> channel) 
-      : stub_(KeyValueStore::NewStub(channel)) {}
-
-  private:
-    std::unique_ptr<KeyValueStore::Stub> stub_;
-};
-
 class ServiceLayerClient {
   public:
-    int chirp_count_ = 0;
+    ServiceLayerClient(const bool& testing);
     std::string registeruser(const std::string& username);
     std::string chirp(const std::string& username, const std::string& text, 
                       const std::string& parent_id);
@@ -99,6 +69,8 @@ class ServiceLayerClient {
 
   private:
     std::unique_ptr<ServiceLayer::Stub> stub_;
+    //TODO: Add direct KVSStore member variable for testing to bypass GRPC
+    bool testing_;
 };
 
-#endif
+#endif //SERVICE_LAYER_CLIENT_H

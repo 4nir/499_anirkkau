@@ -10,7 +10,7 @@
 #include <grpcpp/server_context.h>
 #include "backend_store.grpc.pb.h"
 #include "service_layer.grpc.pb.h"
-#include "server_clients.h"
+#include "service_layer_client.h"
 
 // Logic and data behind the server's behaviour - add implementation here.
 class ServiceLayerServiceImpl final : public ServiceLayer::Service {
@@ -27,11 +27,12 @@ class ServiceLayerServiceImpl final : public ServiceLayer::Service {
 
     Status monitor(ServerContext* context, const MonitorRequest* request,
                     ServerWriter<MonitorReply>* writer);
+    std::string GenerateChirpID();
 private:
-  std::vector<std::string> chirp_log;
+  std::vector<std::string> chirp_log_;
+  int chirp_count_ = 0;
 };
 
-
-#endif
+#endif //SERVICE_SERVER_H
 
 

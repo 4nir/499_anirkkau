@@ -1,5 +1,5 @@
-#ifndef KEY_VALUE_STORE_H_
-#define KEY_VALUE_STORE_H_
+#ifndef KEY_VALUE_STORE_H
+#define KEY_VALUE_STORE_H
 
 #include <string>
 #include <map>
@@ -31,5 +31,4 @@ class KeyValueStoreClass {
   std::mutex store_mutex_;
 };
 
-
-#endif
+#endif //KEY_VALUE_STORE_H
