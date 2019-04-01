@@ -3,7 +3,6 @@
 
 #include <iostream>
 #include <string>
-
 #include <grpcpp/grpcpp.h>
 #include <grpcpp/server.h>
 #include <grpcpp/server_builder.h>
@@ -15,7 +14,6 @@
 class KeyValueStoreServiceImpl final : public KeyValueStore::Service {
   
   public:
-  
     Status put(ServerContext* context, const PutRequest* request,
                     PutReply* reply);
     Status get(ServerContext* context,

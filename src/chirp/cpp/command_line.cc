@@ -47,7 +47,6 @@ int main(int argc, char** argv) {
   if(FLAGS_command.find("register") != std::string::npos){
       std::string output = service_client.registeruser(argv[1]);
       std::cout << output << std::endl;
-      //TODO: output register failed if username already exists
       return 0;
    }
 
@@ -91,6 +90,11 @@ int main(int argc, char** argv) {
       std::string latest_chirp = "";
       while(1){
           std::string output = service_client.monitor(username);
+          if(output == "Error: Invalid monitor request."){ //Break if monitor request is invalid
+            std::cout << "Error: Invalid chirp ID." << std::endl;
+            break;
+          }
+
           if(output != "" && output != latest_chirp){
             latest_chirp = output;
             std::cout << "Latest chirp from feed: " << output << std::endl;

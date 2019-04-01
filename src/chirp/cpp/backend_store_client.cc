@@ -108,8 +108,7 @@ std::vector<Chirp> KeyValueStoreClient::get(const std::string& key, const std::s
   if (status.ok()) {
     return chirp_thread;
   } else {
-    std::cout << status.error_code() << ": " << status.error_message()
-            << std::endl;
+    std::cout << "Error: Chirp ID not found." << std::endl;
     return chirp_thread;
   }
 }
@@ -154,8 +153,7 @@ std::vector<std::string> KeyValueStoreClient::getFollowingList(const std::string
   if (status.ok()) {
     return following_list;
   } else {
-    std::cout << status.error_code() << ": " << status.error_message()
-            << std::endl;
+    std::cout << "Error: Invalid chirp ID." << std::endl;
     return following_list;
   }
 }
@@ -178,10 +176,8 @@ std::string KeyValueStoreClient::deletekey(const std::string& key) {
 
   // Act upon its status.
   if (status.ok()) {
-    return "RPC succeeded";
+    return "success";
   } else {
-    std::cout << status.error_code() << ": " << status.error_message()
-              << std::endl;
-    return "RPC failed";
+    return "failed";
   }
 }

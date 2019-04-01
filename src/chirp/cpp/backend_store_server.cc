@@ -83,6 +83,7 @@
             
           } else {
             std::cout << "Error: Parent ID not found in map." << std::endl;
+            return Status::CANCELLED;
           }
 
           // Step 2: Store chirp id : fresh reply vector
@@ -131,7 +132,7 @@
         if(it == chirp_map.end())
         {
           std::cout << "Error: Key not found. " << std::endl;
-          // return Status::CANCELLED; //TODO
+          return Status::CANCELLED;
         } else {
           //element found;
 
@@ -160,6 +161,7 @@
                 }
               } else {
                 std::cout << "Error: Username doesn't exist." << std::endl;
+                return Status::CANCELLED;
               }
 
           } else {
@@ -174,8 +176,13 @@
 
     Status KeyValueStoreServiceImpl::deletekey(ServerContext* context, const DeleteRequest* request,
                     DeleteReply* reply) {
-      store_.DeleteKey(request->key()); //TODO: Test this
-      return Status::OK;
+      if(store_.KeyExists(request->key())){
+        store_.DeleteKey(request->key()); //TODO: Test this
+        return Status::OK;
+      } else {
+        std::cout << "Error: Invalid chirp ID." << std::endl;
+        return Status::CANCELLED;
+      }               
     }
 
     std::vector<std::string>* KeyValueStoreServiceImpl::DFSReplyThread(std::map<std::string, std::vector<std::string> > chirpMap,

@@ -66,9 +66,7 @@ ServiceLayerClient::ServiceLayerClient(const bool& testing){
       if (status.ok()) {
         return username + "\'s chirp was posted.";
       } else {
-        std::cout << status.error_code() << ": " << status.error_message()
-                  << std::endl;
-        return "RPC failed";
+        return "Error: Invalid chirp ID.";
       }
     }
 
@@ -117,9 +115,7 @@ ServiceLayerClient::ServiceLayerClient(const bool& testing){
       if (status.ok()) {
         return final_thread;
       } else {
-        std::cout << status.error_code() << ": " << status.error_message()
-                  << std::endl;
-        return "RPC failed";
+        return "Error: Invalid chirp ID.";
       }
     }
 
@@ -159,9 +155,7 @@ ServiceLayerClient::ServiceLayerClient(const bool& testing){
       if (status.ok()) {
         return chirp_text;
       } else {
-        std::cout << status.error_code() << ": " << status.error_message()
-                  << std::endl;
-        return "RPC failed";
+        return "Error: Invalid monitor request.";
       }
     }
 

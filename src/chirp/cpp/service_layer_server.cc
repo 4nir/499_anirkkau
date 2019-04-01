@@ -47,13 +47,17 @@ Status ServiceLayerServiceImpl::chirp(ServerContext* context, const ChirpRequest
   // Serialize Chirp
   std::string chirp_str = chirp.SerializeAsString();
   std::string type = "chirp";
-  store_client.put(chirp_id, chirp_str, type);
+  std::string response = store_client.put(chirp_id, chirp_str, type);
 
-  // Push into chirp_log_. Every chirp gets logged in the Service Layer (for Monitor)
-  chirp_log_.push_back(chirp_str);
-  
-  //TODO: Add Status::CANCELLED?
-  return Status::OK;
+  if(response == "success"){
+    // Push into chirp_log_. Every chirp gets logged in the Service Layer (for Monitor)
+    chirp_log_.push_back(chirp_str);
+    
+    //TODO: Add Status::CANCELLED?
+    return Status::OK;
+  } else {
+    return Status::CANCELLED;
+  }
 }
 
 Status ServiceLayerServiceImpl::follow(ServerContext* context, const FollowRequest* request,
@@ -86,6 +90,9 @@ Status ServiceLayerServiceImpl::read(ServerContext* context, const ReadRequest* 
   chirp_Obj_thread = store_client.get(chirp_id, type);
 
   std::string chirp_thread = "";
+  if(chirp_Obj_thread.size() == 0){
+    return Status::CANCELLED;
+  }
   //Loop over 
   for (Chirp chirp : chirp_Obj_thread){
     std::string chirp_text(chirp.text());
@@ -109,6 +116,10 @@ Status ServiceLayerServiceImpl::monitor(ServerContext* context, const MonitorReq
   std::string username = request->username();
 
   std::vector<std::string> following_list = store_client.getFollowingList(username, type);
+  if(following_list.size() == 0){
+    return Status::CANCELLED;
+  }
+
   //If latest chirp's username is in following_list return chirp
   int last_index = chirp_log_.size() - 1;
   if(last_index < 0){
