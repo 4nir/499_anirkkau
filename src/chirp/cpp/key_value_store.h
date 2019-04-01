@@ -25,9 +25,8 @@ class KeyValueStoreClass {
 
  private:
   std::map<std::string, std::vector<std::string> > chirp_map_;
-  /*
-    Mutex to safely lock threads/clients
-  */
+  
+   //Mutex to safely lock threads/clients
   std::mutex store_mutex_;
 };
 

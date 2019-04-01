@@ -148,6 +148,8 @@
               reply.set_value(value_requested);
               stream->Write(reply);
             }
+            delete reply_thread_vec;
+            
           } else if(type == "monitor"){
               auto it = chirp_map.find(key_requested);
               if(it != chirp_map.end())
@@ -167,7 +169,6 @@
           } else {
             std::cout << "Error: Invalid type at KVS Server READ" << std::endl;
           }
-          // delete reply_thread_vec;
         }
       }
 

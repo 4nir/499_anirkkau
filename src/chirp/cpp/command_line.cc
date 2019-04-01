@@ -95,7 +95,7 @@ int main(int argc, char** argv) {
             break;
           }
 
-          if(output != "" && output != latest_chirp){
+          if(output != "" && output != latest_chirp){ //cout to user if there's a relevent update
             latest_chirp = output;
             std::cout << "Latest chirp from feed: " << output << std::endl;
           }
