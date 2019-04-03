@@ -14,25 +14,23 @@
 
 // Logic and data behind the server's behaviour - add implementation here.
 class ServiceLayerServiceImpl final : public ServiceLayer::Service {
+ public:
+  Status registeruser(ServerContext* context, const RegisterRequest* request,
+                      RegisterReply* reply);
+  Status chirp(ServerContext* context, const ChirpRequest* request,
+               ChirpReply* reply);
+  Status follow(ServerContext* context, const FollowRequest* request,
+                FollowReply* reply);
+  Status read(ServerContext* context, const ReadRequest* request,
+              ReadReply* reply);
 
-  public:
-    Status registeruser(ServerContext* context, const RegisterRequest* request,
-                    RegisterReply* reply);
-    Status chirp(ServerContext* context, const ChirpRequest* request,
-                    ChirpReply* reply);
-    Status follow(ServerContext* context, const FollowRequest* request,
-                    FollowReply* reply);
-    Status read(ServerContext* context, const ReadRequest* request,
-    ReadReply* reply);
+  Status monitor(ServerContext* context, const MonitorRequest* request,
+                 ServerWriter<MonitorReply>* writer);
+  std::string GenerateChirpID();
 
-    Status monitor(ServerContext* context, const MonitorRequest* request,
-                    ServerWriter<MonitorReply>* writer);
-    std::string GenerateChirpID();
-private:
+ private:
   std::vector<std::string> chirp_log_;
   int chirp_count_ = 0;
 };
 
-#endif //SERVICE_SERVER_H
-
-
+#endif  // SERVICE_SERVER_H

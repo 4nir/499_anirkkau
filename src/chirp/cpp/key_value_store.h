@@ -1,15 +1,15 @@
 #ifndef KEY_VALUE_STORE_H
 #define KEY_VALUE_STORE_H
 
-#include <string>
 #include <map>
 #include <mutex>
+#include <string>
 
 #include <grpcpp/grpcpp.h>
 #include "backend_store.grpc.pb.h"
 
 class KeyValueStoreClass {
-  public:
+ public:
   KeyValueStoreClass(){};
   ~KeyValueStoreClass(){};
 
@@ -25,9 +25,9 @@ class KeyValueStoreClass {
 
  private:
   std::map<std::string, std::vector<std::string> > chirp_map_;
-  
-   //Mutex to safely lock threads/clients
+
+  // Mutex to safely lock threads/clients
   std::mutex store_mutex_;
 };
 
-#endif //KEY_VALUE_STORE_H
+#endif  // KEY_VALUE_STORE_H

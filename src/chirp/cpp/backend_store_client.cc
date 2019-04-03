@@ -3,30 +3,31 @@
 #include <string>
 #include <thread>
 
-#include <grpcpp/grpcpp.h>
 #include <grpcpp/channel.h>
 #include <grpcpp/client_context.h>
 #include <grpcpp/create_channel.h>
+#include <grpcpp/grpcpp.h>
 #include "backend_store.grpc.pb.h"
+#include "backend_store_client.h"
 #include "service_layer.grpc.pb.h"
 #include "service_layer_client.h"
-#include "backend_store_client.h"
 
 // rpc put
-std::string KeyValueStoreClient::put(const std::string& key, const std::string& value, 
+std::string KeyValueStoreClient::put(const std::string& key,
+                                     const std::string& value,
                                      const std::string& type) {
-
   // Context for the client. It could be used to convey extra information to
   // the server and/or tweak certain RPC behaviors.
   ClientContext context;
-  
-  if(type == "register"){
+
+  if (type == "register") {
     // "register" signals new user to register
     context.AddMetadata("type", "register");
     // "chirp" signals new chirp
   } else if (type == "chirp") {
     context.AddMetadata("type", "chirp");
-  } else if (type == "follow"){ // otherwise, it's an append to a following list
+  } else if (type ==
+             "follow") {  // otherwise, it's an append to a following list
     context.AddMetadata("type", "follow");
   } else {
     std::cout << "Error: Invalid type @ store_client PUT" << std::endl;
@@ -53,55 +54,52 @@ std::string KeyValueStoreClient::put(const std::string& key, const std::string& 
   }
 }
 
-GetRequest KeyValueStoreClient::MakeGetRequest(const std::string& key){
+GetRequest KeyValueStoreClient::MakeGetRequest(const std::string& key) {
   GetRequest req;
   req.set_key(key);
   return req;
 }
 
 // rpc get Inplementation
-std::vector<Chirp> KeyValueStoreClient::get(const std::string& key, const std::string& type) {
-
+std::vector<Chirp> KeyValueStoreClient::get(const std::string& key,
+                                            const std::string& type) {
   // Context for the client. It could be used to convey extra information to
   // the server and/or tweak certain RPC behaviors.
   ClientContext context;
-  if(type == "read"){
+  if (type == "read") {
     context.AddMetadata("type", "read");
   } else {
     std::cout << "Error: Invalid metadata at KVS Client GET" << std::endl;
   }
 
-
   std::shared_ptr<ClientReaderWriter<GetRequest, GetReply> > stream(
-  stub_->get(&context));
+      stub_->get(&context));
 
   std::vector<GetRequest> requests;
   GetRequest r1 = MakeGetRequest(key);
   requests.push_back(r1);
 
   std::thread writer([&]() {
-        
-        for (const GetRequest& req : requests) {
-          stream->Write(req);
-        }
-        stream->WritesDone();
+    for (const GetRequest& req : requests) {
+      stream->Write(req);
+    }
+    stream->WritesDone();
   });
 
   // Container for the data we expect from the server.
   GetReply reply;
   std::vector<Chirp> chirp_thread;
   while (stream->Read(&reply)) {
-
     // Deserialize chirps
-     std::string chirp_str = reply.value();
-     Chirp chirp_catcher;
-     chirp_catcher.ParseFromString(chirp_str);
-     chirp_thread.push_back(chirp_catcher);
+    std::string chirp_str = reply.value();
+    Chirp chirp_catcher;
+    chirp_catcher.ParseFromString(chirp_str);
+    chirp_thread.push_back(chirp_catcher);
   }
 
   writer.join();
   Status status = stream->Finish();
-  
+
   // Act upon its status.
   if (status.ok()) {
     return chirp_thread;
@@ -111,31 +109,30 @@ std::vector<Chirp> KeyValueStoreClient::get(const std::string& key, const std::s
   }
 }
 
-std::vector<std::string> KeyValueStoreClient::getFollowingList(const std::string& key, const std::string& type){
-  
+std::vector<std::string> KeyValueStoreClient::getFollowingList(
+    const std::string& key, const std::string& type) {
   // Context for the client. It could be used to convey extra information to
   // the server and/or tweak certain RPC behaviors.
   ClientContext context;
-  if(type == "monitor"){
+  if (type == "monitor") {
     context.AddMetadata("type", "monitor");
   } else {
-    std::cout << "Error: Invalid metadata at KVS Client getFollowingList" << std::endl;
+    std::cout << "Error: Invalid metadata at KVS Client getFollowingList"
+              << std::endl;
   }
 
-
   std::shared_ptr<ClientReaderWriter<GetRequest, GetReply> > stream(
-  stub_->get(&context));
+      stub_->get(&context));
 
   std::vector<GetRequest> requests;
   GetRequest r1 = MakeGetRequest(key);
   requests.push_back(r1);
 
   std::thread writer([&]() {
-        
-        for (const GetRequest& req : requests) {
-          stream->Write(req);
-        }
-        stream->WritesDone();
+    for (const GetRequest& req : requests) {
+      stream->Write(req);
+    }
+    stream->WritesDone();
   });
 
   // Container for the data we expect from the server.
@@ -147,7 +144,7 @@ std::vector<std::string> KeyValueStoreClient::getFollowingList(const std::string
 
   writer.join();
   Status status = stream->Finish();
-  
+
   // Act upon its status.
   if (status.ok()) {
     return following_list;
