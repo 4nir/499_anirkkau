@@ -109,7 +109,7 @@ Status ServiceLayerServiceImpl::read(ServerContext* context,
     std::string chirp_text(chirp.text());
     std::string chirp_username(chirp.username());
     chirp_thread += chirp_username;
-    chirp_thread += " said: ";
+    chirp_thread += " chirped: ";
     chirp_thread += chirp_text;
     chirp_thread += "\n==================\n";
   }
