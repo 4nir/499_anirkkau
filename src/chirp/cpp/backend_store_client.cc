@@ -11,14 +11,6 @@
 #include "service_layer.grpc.pb.h"
 #include "service_layer_client.h"
 #include "backend_store_client.h"
-//TODO: Change to KVS client, KVS store server, KVS class
-//-------------------------KeyValueStoreClient-------------------------//
-
-GetRequest KeyValueStoreClient::MakeGetRequest(const std::string& key){
-  GetRequest req;
-  req.set_key(key);
-  return req;
-}
 
 // rpc put
 std::string KeyValueStoreClient::put(const std::string& key, const std::string& value, 
@@ -59,6 +51,12 @@ std::string KeyValueStoreClient::put(const std::string& key, const std::string& 
               << std::endl;
     return "failed";
   }
+}
+
+GetRequest KeyValueStoreClient::MakeGetRequest(const std::string& key){
+  GetRequest req;
+  req.set_key(key);
+  return req;
 }
 
 // rpc get Inplementation
@@ -114,6 +112,7 @@ std::vector<Chirp> KeyValueStoreClient::get(const std::string& key, const std::s
 }
 
 std::vector<std::string> KeyValueStoreClient::getFollowingList(const std::string& key, const std::string& type){
+  
   // Context for the client. It could be used to convey extra information to
   // the server and/or tweak certain RPC behaviors.
   ClientContext context;

@@ -5,3 +5,4 @@ Vagrantfile
 *.pb.cc 
 *.pb.h
 .vscode/
+.clang-format

@@ -1,7 +1,9 @@
-Author: Anirudh Kaushik
-Email: anirkkau@usc.edu
+# CS-499 Chirp Project Phase 2
 
-1) Setting up:
+## Author: Anirudh Kaushik
+## Email: anirkkau@usc.edu
+
+1) Setting up Vagrant:
 
   The Vagrant box I used:
   config.vm.box = "ubuntu/bionic64"

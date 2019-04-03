@@ -15,12 +15,15 @@
 Status ServiceLayerServiceImpl::registeruser(ServerContext* context, const RegisterRequest* request,
                 RegisterReply* reply) {
   // Register Implementation
+  std::string type = "register";
 
   KeyValueStoreClient store_client(grpc::CreateChannel("localhost:50000", grpc::InsecureChannelCredentials()));
   std::string new_user = request->username();
 
-  // "" in the value field signals to the KVS server it's a new user
-  std::string response = store_client.put(new_user, "register", "register");
+  // value here is irreleventsince the KVS will check for username validity
+  std::string value = "";
+
+  std::string response = store_client.put(new_user, value, type);
   if(response == "success"){
     return Status::OK;
   } else {
@@ -30,6 +33,8 @@ Status ServiceLayerServiceImpl::registeruser(ServerContext* context, const Regis
 
 Status ServiceLayerServiceImpl::chirp(ServerContext* context, const ChirpRequest* request,
                     ChirpReply* reply) {
+  // Chirp Implementation
+  std::string type = "chirp";
 
   KeyValueStoreClient store_client(grpc::CreateChannel("localhost:50000", grpc::InsecureChannelCredentials()));
   std::string chirp_username = request->username();
@@ -46,14 +51,12 @@ Status ServiceLayerServiceImpl::chirp(ServerContext* context, const ChirpRequest
 
   // Serialize Chirp
   std::string chirp_str = chirp.SerializeAsString();
-  std::string type = "chirp";
   std::string response = store_client.put(chirp_id, chirp_str, type);
 
   if(response == "success"){
     // Push into chirp_log_. Every chirp gets logged in the Service Layer (for Monitor)
     chirp_log_.push_back(chirp_str);
     
-    //TODO: Add Status::CANCELLED?
     return Status::OK;
   } else {
     return Status::CANCELLED;
@@ -63,13 +66,11 @@ Status ServiceLayerServiceImpl::chirp(ServerContext* context, const ChirpRequest
 Status ServiceLayerServiceImpl::follow(ServerContext* context, const FollowRequest* request,
                     FollowReply* reply){
   // Follow Implementation
+  std::string type = "follow";
 
   KeyValueStoreClient store_client(grpc::CreateChannel("localhost:50000", grpc::InsecureChannelCredentials()));
   std::string username = request->username();
   std::string to_follow = request->to_follow();
-
-  // "" in the value field signals to the KVS server it's a new user
-  std::string type = "follow";
   std::string response = store_client.put(username, to_follow, "follow");
 
   if(response == "success"){
@@ -81,6 +82,7 @@ Status ServiceLayerServiceImpl::follow(ServerContext* context, const FollowReque
 
 Status ServiceLayerServiceImpl::read(ServerContext* context, const ReadRequest* request,
                     ReadReply* reply) {
+  //Read Implementation
   std::string type = "read";
 
   KeyValueStoreClient store_client(grpc::CreateChannel("localhost:50000", grpc::InsecureChannelCredentials()));
@@ -110,13 +112,19 @@ Status ServiceLayerServiceImpl::read(ServerContext* context, const ReadRequest* 
 
 Status ServiceLayerServiceImpl::monitor(ServerContext* context, const MonitorRequest* request,
                     ServerWriter<MonitorReply>* writer){
+  //Monitor Implementation
+  //1) Grab a list of all usernames the monitoring user follows
+  //2) Every chirp that goes through the service layer is checked
+  // to see if it's relevent to the monitoring user
+  // i.e. the latest chirp's author belongs to the monitoring user's following list
+  //3) If so, display chirp to monitoring user
   std::string type = "monitor";
 
   KeyValueStoreClient store_client(grpc::CreateChannel("localhost:50000", grpc::InsecureChannelCredentials()));
   std::string username = request->username();
 
   std::vector<std::string> following_list = store_client.getFollowingList(username, type);
-  if(following_list.size() == 0){
+  if(following_list.size() == 0){ //User doesn't follow anyone yet
     return Status::CANCELLED;
   }
 
@@ -126,6 +134,7 @@ Status ServiceLayerServiceImpl::monitor(ServerContext* context, const MonitorReq
     std::cout << "Error: Nobody has chirped yet!" << std::endl;
     return Status::OK;
   }
+  
   std::string latest_chirp_bytes = chirp_log_.at(last_index);
   Chirp chirp_obj;
   chirp_obj.ParseFromString(latest_chirp_bytes);

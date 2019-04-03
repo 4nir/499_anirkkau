@@ -124,7 +124,6 @@ ServiceLayerClient::ServiceLayerClient(const bool& testing){
       // the server and/or tweak certain RPC behaviors.
       ClientContext context;
 
-
       // Data we are sending to the server.
       MonitorRequest request;
       request.set_username(username);
@@ -142,15 +141,12 @@ ServiceLayerClient::ServiceLayerClient(const bool& testing){
           Chirp chirp_catcher;
           chirp_catcher.ParseFromString(chirp_bytes);
           chirp_text = chirp_catcher.text();
-          // std::cout << "New chirp: " << chirp_text << std::endl;
-          
-        } else {
+        } else { //User isn't a follower
           chirp_text = "";
-          // std::cout << "User isn't a follower. " << std::endl;
         }
       }
       Status status = reader->Finish();
-
+      
       // Act upon its status.
       if (status.ok()) {
         return chirp_text;

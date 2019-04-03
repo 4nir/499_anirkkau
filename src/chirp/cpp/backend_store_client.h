@@ -58,13 +58,13 @@ class KeyValueStoreClient {
   public:
     std::string put(const std::string& key, const std::string& value, const std::string& type);
 
+    GetRequest MakeGetRequest(const std::string& key);
+
     std::vector<Chirp> get(const std::string& key, const std::string& type);
 
     std::vector<std::string> getFollowingList(const std::string& key, const std::string& type);
 
     std::string deletekey(const std::string& key);
-
-    GetRequest MakeGetRequest(const std::string& key);
 
     KeyValueStoreClient(std::shared_ptr<Channel> channel) 
       : stub_(KeyValueStore::NewStub(channel)) {}

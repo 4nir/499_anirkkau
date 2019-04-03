@@ -71,7 +71,7 @@ class ServiceLayerClient {
     std::unique_ptr<ServiceLayer::Stub> stub_;
     //TODO: Add direct KVSStore member variable for testing to bypass GRPC
     bool testing_;
-    KeyValueStoreClass test_store_;
+    // KeyValueStoreClass test_store_;
 };
 
 #endif //SERVICE_LAYER_CLIENT_H
