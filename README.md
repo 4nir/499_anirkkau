@@ -3,7 +3,7 @@
 ### Author: Anirudh Kaushik
 ### Email: anirkkau@usc.edu
 
-1) Setting up Vagrant:
+## Setting up Vagrant:
 
   Reference here for more detailed walkthrough: https://www.vagrantup.com/ 
 
@@ -49,7 +49,7 @@ Install gtest
 ```
 
 
-2) Running Chirp
+## Running Chirp
 
   To build all executables and tests, follow these commands:
   ```
@@ -69,7 +69,7 @@ Install gtest
   where # starts from 0 and is incremented by 1 with each new chirp.
   For example: cid//1, cid//2, cid//3, etc.
 
-3) Running Tests
+## Running Tests
   To run tests, follow these commands:
   ```
     $ ./key_value_store_tests
