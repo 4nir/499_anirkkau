@@ -30,7 +30,7 @@
 
   **Setting up dependencies**
 
-    1. Update apt-get: 
+    -Update apt-get: 
     ```
       $ sudo apt-get update
     ```
@@ -80,7 +80,41 @@
   where # starts from 0 and is incremented by 1 with each new chirp.
   For example: cid//1, cid//2, cid//3, etc.
 
+3) Running Tests
+  To run tests, follow these commands:
+  ```
+    $ ./key_value_store_tests
+    $ ./service_layer_tests
+  ```
+
   All functionality is designed according to the Chirp Documentation. Commands will not work together and must be done one at a time.
-   
+  
+**Command Line Reference**
+
+Register
+
+```$ ./chirp --register <username>
+```
+(user must be registered to perform any other commands)
+Chirp
+
+```$ ./chirp --user <username> --chirp <chirp text>
+```
+Reply
+
+```$ ./chirp --user <username> --chirp <chirp text> --reply <reply chirp id>
+```
+Follow
+
+```$ ./chirp --user <username> --follow <username_to_follow>
+```
+Read
+
+```$ ./chirp --read <chirp_id>
+```
+Monitor
+
+```$ ./chirp --user <username> --monitor
+```
 **Cleaning:**
 ```$ make clean```: Removes all executables
