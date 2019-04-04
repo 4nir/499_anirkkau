@@ -89,32 +89,38 @@
 
   All functionality is designed according to the Chirp Documentation. Commands will not work together and must be done one at a time.
   
-**Command Line Reference**
+## Command Line Reference
 
 Register
 
-```$ ./chirp --register <username>
+```
+  $ ./chirp --register <username>
 ```
 (user must be registered to perform any other commands)
 Chirp
 
-```$ ./chirp --user <username> --chirp <chirp text>
+```
+  $ ./chirp --user <username> --chirp <chirp text>
 ```
 Reply
 
-```$ ./chirp --user <username> --chirp <chirp text> --reply <reply chirp id>
+```
+  $ ./chirp --user <username> --chirp <chirp text> --reply <reply chirp id>
 ```
 Follow
 
-```$ ./chirp --user <username> --follow <username_to_follow>
+```
+  $ ./chirp --user <username> --follow <username_to_follow>
 ```
 Read
 
-```$ ./chirp --read <chirp_id>
+```
+  $ ./chirp --read <chirp_id>
 ```
 Monitor
 
-```$ ./chirp --user <username> --monitor
+```
+  $ ./chirp --user <username> --monitor
 ```
 **Cleaning:**
 ```$ make clean```: Removes all executables
