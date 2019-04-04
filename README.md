@@ -30,12 +30,21 @@
 
   **Setting up dependencies:**
 
-    1. Update apt-get: ```sudo apt-get update```
-    2. Install g++: ```sudo apt-get install g++```
-    3. Install cmake: ```sudo apt-get install cmake```
-    4. Install prereqs: ```sudo apt-get install build-essential autoconf libtool pkg-config```
-    5. Install gtests & gflags: ```sudo apt-get install libgflags-dev libgtest-dev . cd /usr/src/gtest``` b. ```sudo cmake CMakeLists.txt``` c. ```sudo make``` d. ```sudo cp *.a /usr/lib```
-    6. Install clang: ```sudo apt-get install clang libc++-dev```
+    1. Update apt-get: 
+    ```$ sudo apt-get update```
+    2. Install g++:
+     ```$ sudo apt-get install g++```
+    3. Install cmake:
+     ```$ sudo apt-get install cmake```
+    4. Install prereqs: 
+    ```$ sudo apt-get install build-essential autoconf libtool pkg-config```
+    5. Install gtests & gflags:
+    a. ```$ sudo apt-get install libgflags-dev libgtest-dev . cd /usr/src/gtest``` 
+    b. ```$ sudo cmake CMakeLists.txt``` 
+    c. ```$ sudo make``` 
+    d. ```$ sudo cp *.a /usr/lib```
+    6. Install clang: 
+    ```$ sudo apt-get install clang libc++-dev```
 
 **Setting up gRPC**
 
