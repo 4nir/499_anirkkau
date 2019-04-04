@@ -32,7 +32,6 @@ Status KeyValueStoreServiceImpl::put(ServerContext* context,
   }
 
   if (type == "register") {
-
     if (!store_.KeyExists(key)) {
       store_.Put(key, "");
       std::cout << "Registered new user: " << key << std::endl;
@@ -66,8 +65,9 @@ Status KeyValueStoreServiceImpl::put(ServerContext* context,
     std::string chirp_id = chirp_catcher.id();
     std::string chirp_parent_id = chirp_catcher.parent_id();
 
-    // For chirps in store_, the key is the chirp ID. Index 0 contains the chirp in byte string form,
-    // and indexes 1 to n-1 contain the chirp IDs that are replies 
+    // For chirps in store_, the key is the chirp ID. Index 0 contains the chirp
+    // in byte string form, and indexes 1 to n-1 contain the chirp IDs that are
+    // replies
 
     if (chirp_parent_id == "0") {  // Root chirp
       store_.Put(key, value);
@@ -76,16 +76,17 @@ Status KeyValueStoreServiceImpl::put(ServerContext* context,
     } else {  //  Reply chirp
 
       // Step 1: Append chirp ID to parent chirp's reply vector
-      if (store_.KeyExists(chirp_parent_id)) { //Parent ID is valid
+      if (store_.KeyExists(chirp_parent_id)) {  // Parent ID is valid
         store_.Put(chirp_parent_id, key);
 
-      } else { // Parent ID is not valid, Put returns Status::CANCELLED
+      } else {  // Parent ID is not valid, Put returns Status::CANCELLED
         std::cout << "Error: Parent ID not found in map." << std::endl;
         return Status::CANCELLED;
       }
 
-      // Step 2: Store chirp id : fresh reply vector (index 0 is the chirp's bytes, and subsequent elements are
-      //IDs of chirps in reply to the current chirp
+      // Step 2: Store chirp id : fresh reply vector (index 0 is the chirp's
+      // bytes, and subsequent elements are
+      // IDs of chirps in reply to the current chirp
       store_.Put(key, value);
       std::cout << "Inserted Key: " << key << std::endl;
     }
@@ -136,7 +137,8 @@ Status KeyValueStoreServiceImpl::get(
         std::vector<std::string>* reply_thread_vec =
             new std::vector<std::string>();
         std::vector<std::string>* full_thread_vec;
-        full_thread_vec = DFSReplyThread(chirp_map, reply_thread_vec, key_requested);
+        full_thread_vec =
+            DFSReplyThread(chirp_map, reply_thread_vec, key_requested);
         GetReply reply;
         std::string value_requested;
         for (int i = 0; i < full_thread_vec->size(); i++) {

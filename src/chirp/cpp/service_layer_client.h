@@ -54,24 +54,44 @@ using chirp::RegisterRequest;
 using chirp::ServiceLayer;
 using chirp::Timestamp;
 
+// gRPC client to communicate with ServiceLayerServiceImpl
 class ServiceLayerClient {
  public:
-  ServiceLayerClient(const bool& testing);
+  // Registers a new user with the given username
+  // @username: username of new user
+  // @return: string representing success or failure of registration
   std::string registeruser(const std::string& username);
+
+  // Follows a new user with the given username
+  // @username: username of new user
+  // @to_follow: username of user to follow
+  // @return: string representing success or failure of follow
+  std::string follow(const std::string& username, const std::string& to_follow);
+
+  // Posts new chirp
+  // @username: username of chirper
+  // @text: text of chirp
+  // @parent_id: Parent ID of chirp; "0" if it's a root chirp
+  // @return: string representing success or failure of chirp
   std::string chirp(const std::string& username, const std::string& text,
                     const std::string& parent_id);
-  std::string follow(const std::string& username, const std::string& to_follow);
+
+  // Reads a thread from a given id
+  // @id: the beginning of the chirp thread
+  // @return: string representing success or failure of read
   std::string read(const std::string& id);
+
+  // Monitors for a given username
+  // @username: username
+  // @return: string representing success or failure of read
   std::string monitor(const std::string& username);
 
   ServiceLayerClient(std::shared_ptr<Channel> channel)
       : stub_(ServiceLayer::NewStub(channel)) {}
 
  private:
+  // gRPC stub
   std::unique_ptr<ServiceLayer::Stub> stub_;
-  // TODO: Add direct KVSStore member variable for testing to bypass GRPC
-  bool testing_;
-  // KeyValueStoreClass test_store_;
 };
 
 #endif  // SERVICE_LAYER_CLIENT_H

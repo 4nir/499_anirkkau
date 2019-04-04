@@ -84,8 +84,9 @@ int main(int argc, char** argv) {
       std::string latest_chirp = "";
       while (1) {
         std::string output = service_client.monitor(username);
-        if (output == "Error: Invalid monitor request.") {  // Break if monitor
-                                                            // request is invalid
+        if (output ==
+            "Error: Invalid monitor request.") {  // Break if monitor
+                                                  // request is invalid
           std::cout << "Error: Invalid chirp ID." << std::endl;
           break;
         }

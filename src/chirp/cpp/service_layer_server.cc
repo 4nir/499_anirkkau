@@ -11,7 +11,6 @@
 #include "service_layer_client.h"
 #include "service_layer_server.h"
 
-// Logic and data behind the server's behaviour - add implementation here.
 Status ServiceLayerServiceImpl::registeruser(ServerContext* context,
                                              const RegisterRequest* request,
                                              RegisterReply* reply) {
@@ -58,7 +57,7 @@ Status ServiceLayerServiceImpl::chirp(ServerContext* context,
   std::string response = store_client.put(chirp_id, chirp_str, type);
 
   if (response == "success") {
-    // Push into chirp_log_. Every chirp gets logged in the Service Layer 
+    // Push into chirp_log_. Every chirp gets logged in the Service Layer
     //(for Monitor)
     chirp_log_.push_back(chirp_str);
 
@@ -124,31 +123,32 @@ Status ServiceLayerServiceImpl::monitor(ServerContext* context,
                                         const MonitorRequest* request,
                                         ServerWriter<MonitorReply>* writer) {
   // Monitor Implementation
-  // 1) Grab a list of all usernames that the monitoring user follows
+  // 1) Grabs a list of all usernames that the monitoring user follows
   // 2) Every chirp that goes through the service layer is checked
   // to see if it's relevent to the monitoring user
-  // i.e. we check if the latest chirp's author belongs to the monitoring user's following
-  // list
-  // 3) If so, display chirp to monitoring user
+  // i.e. we check if the latest chirp's author belongs to the monitoring user's
+  // following list 3) If so, display chirp to monitoring user
   std::string type = "monitor";
 
   KeyValueStoreClient store_client(grpc::CreateChannel(
       "localhost:50000", grpc::InsecureChannelCredentials()));
   std::string username = request->username();
 
+  // Error check
   std::vector<std::string> following_list =
       store_client.getFollowingList(username, type);
   if (following_list.size() == 0) {  // User doesn't follow anyone yet
     return Status::CANCELLED;
   }
 
-  // If latest chirp's username is in following_list return chirp
+  // Error check
   int last_index = chirp_log_.size() - 1;
   if (last_index < 0) {
     std::cout << "Error: Nobody has chirped yet!" << std::endl;
     return Status::OK;
   }
 
+  // If latest chirp's username is in following_list return chirp
   std::string latest_chirp_bytes = chirp_log_.at(last_index);
   Chirp chirp_obj;
   chirp_obj.ParseFromString(latest_chirp_bytes);

@@ -12,14 +12,9 @@
 #include "service_layer.grpc.pb.h"
 #include "service_layer_client.h"
 
-ServiceLayerClient::ServiceLayerClient(const bool& testing) {
-  testing_ = testing;
-}
-
 // rpc registeruser
 std::string ServiceLayerClient::registeruser(const std::string& username) {
-
-  if(username == ""){
+  if (username == "") {
     return "Error: Empty username";
   }
   // Context for the client. It could be used to convey extra information to
@@ -32,10 +27,6 @@ std::string ServiceLayerClient::registeruser(const std::string& username) {
 
   // Container for the data we expect from the server.
   RegisterReply reply;
-
-  if (testing_) {  // Use test KVS
-    std::cout << "TESTING, using test KVS" << std::endl;
-  }
 
   Status status = stub_->registeruser(&context, request, &reply);
 
