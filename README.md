@@ -29,65 +29,20 @@
   ```
 
   **Setting up dependencies**
+Install grpc and protobuf
 
-    Update apt-get: 
+Use these instructions to install grpc and protobuf: https://github.com/grpc/grpc/blob/master/BUILDING.md
+Go to grpc/third_party/protobuf in the grpc repository and run 
 
-    ```
-      $ sudo apt-get update
-    ```
+```./autogen.sh, ./configure, make && sudo make install```
 
-    2. Install g++:
+Go to the root directory of the grpc repository and run sudo make install
+Install gtest
 
-     ```
-     $ sudo apt-get install g++
-     ```
-
-    3. Install cmake:
-
-     ```
-      $ sudo apt-get install cmake
-     ```
-    4. Install prereqs: 
-
-    ```
-      $ sudo apt-get install build-essential autoconf libtool pkg-config
-    ```
-    5. Install gtests & gflags:
-
-    a. 
-    ```
-      $ sudo apt-get install libgflags-dev libgtest-dev . cd /usr/src/gtest
-    ``` 
-    b. 
-    ```
-      $ sudo cmake CMakeLists.txt
-    ``` 
-
-    c.
-     ```
-      $ sudo make
-    ``` 
-
-    d.
-     ```
-      $ sudo cp *.a /usr/lib
-     ```
-     
-    6. Install clang: 
-    ```
-      $ sudo apt-get install clang libc++-dev
-    ```
-
-**Setting up gRPC**
-
-    ```$ git clone -b $(curl -L https://grpc.io/release) https://github.com/grpc/grpc ```
-    $ ```cd grpc $ git submodule update --init```
-    Install gRPC 
-    a. ```sudo make ```
-    b. ```sudo make install ```
-    c. ```cd grpc/third_party/protobuf ```
-    d. ```sudo make install```
-    In grpc root folder: ```sudo make install```
+```
+  $ sudo apt-get install libgtest-dev
+  $ sudo apt-get install cmake cd /usr/src/gtest sudo cmake CMakeLists.txt sudo $ $ make sudo cp *.a /usr/lib
+```
 
 
 2) Running Chirp
