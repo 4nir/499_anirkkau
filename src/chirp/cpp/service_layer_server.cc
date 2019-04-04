@@ -22,7 +22,7 @@ Status ServiceLayerServiceImpl::registeruser(ServerContext* context,
       "localhost:50000", grpc::InsecureChannelCredentials()));
   std::string new_user = request->username();
 
-  // value here is irreleventsince the KVS will check for username validity
+  // value is irrelevent since the KVS will check for username validity
   std::string value = "";
 
   std::string response = store_client.put(new_user, value, type);
@@ -58,8 +58,8 @@ Status ServiceLayerServiceImpl::chirp(ServerContext* context,
   std::string response = store_client.put(chirp_id, chirp_str, type);
 
   if (response == "success") {
-    // Push into chirp_log_. Every chirp gets logged in the Service Layer (for
-    // Monitor)
+    // Push into chirp_log_. Every chirp gets logged in the Service Layer 
+    //(for Monitor)
     chirp_log_.push_back(chirp_str);
 
     return Status::OK;
@@ -104,7 +104,8 @@ Status ServiceLayerServiceImpl::read(ServerContext* context,
   if (chirp_Obj_thread.size() == 0) {
     return Status::CANCELLED;
   }
-  // Loop over
+
+  // Loop over and set up the user output as chirp_thread
   for (Chirp chirp : chirp_Obj_thread) {
     std::string chirp_text(chirp.text());
     std::string chirp_username(chirp.username());
@@ -123,10 +124,10 @@ Status ServiceLayerServiceImpl::monitor(ServerContext* context,
                                         const MonitorRequest* request,
                                         ServerWriter<MonitorReply>* writer) {
   // Monitor Implementation
-  // 1) Grab a list of all usernames the monitoring user follows
+  // 1) Grab a list of all usernames that the monitoring user follows
   // 2) Every chirp that goes through the service layer is checked
   // to see if it's relevent to the monitoring user
-  // i.e. the latest chirp's author belongs to the monitoring user's following
+  // i.e. we check if the latest chirp's author belongs to the monitoring user's following
   // list
   // 3) If so, display chirp to monitoring user
   std::string type = "monitor";

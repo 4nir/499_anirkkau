@@ -34,7 +34,7 @@ service_layer_server: service_layer.pb.o service_layer.grpc.pb.o backend_store.p
 key_value_store_tests: key_value_store_tests.cc key_value_store.o
 	$(CXX) $^ $(LDFLAGS) -o $@ -lgtest -lgflags
 
-service_layer_tests: service_layer_tests.cc service_layer.o
+service_layer_tests: service_layer.pb.o service_layer.grpc.pb.o backend_store.pb.o backend_store.grpc.pb.o service_layer_tests.cc key_value_store.o service_layer.o
 	$(CXX) $^ $(LDFLAGS) -o $@ -lgtest -lgflags
 	
 .PRECIOUS: %.grpc.pb.cc

@@ -19,6 +19,9 @@ class KeyValueStoreServiceImpl final : public KeyValueStore::Service {
              ServerReaderWriter<GetReply, GetRequest>* stream);
   Status deletekey(ServerContext* context, const DeleteRequest* request,
                    DeleteReply* reply);
+
+  //Takes in the store map, the starting chirp ID to read from, and returns a
+  //vector of chirp replies in byte form
   std::vector<std::string>* DFSReplyThread(
       std::map<std::string, std::vector<std::string> > chirp_map,
       std::vector<std::string>* reply_thread_vec, std::string chirp_id);

@@ -12,7 +12,7 @@
 #include "service_layer.grpc.pb.h"
 #include "service_layer_client.h"
 
-// rpc put
+// rpc put Implementation
 std::string KeyValueStoreClient::put(const std::string& key,
                                      const std::string& value,
                                      const std::string& type) {
@@ -26,8 +26,8 @@ std::string KeyValueStoreClient::put(const std::string& key,
     // "chirp" signals new chirp
   } else if (type == "chirp") {
     context.AddMetadata("type", "chirp");
-  } else if (type ==
-             "follow") {  // otherwise, it's an append to a following list
+  } else if (type == "follow") {  
+    // "follow" signals an append to a following list
     context.AddMetadata("type", "follow");
   } else {
     std::cout << "Error: Invalid type @ store_client PUT" << std::endl;
@@ -60,7 +60,7 @@ GetRequest KeyValueStoreClient::MakeGetRequest(const std::string& key) {
   return req;
 }
 
-// rpc get Inplementation
+// rpc get Implementation
 std::vector<Chirp> KeyValueStoreClient::get(const std::string& key,
                                             const std::string& type) {
   // Context for the client. It could be used to convey extra information to
@@ -154,7 +154,7 @@ std::vector<std::string> KeyValueStoreClient::getFollowingList(
   }
 }
 
-// rpc deletekey
+// rpc deletekey Implementation
 std::string KeyValueStoreClient::deletekey(const std::string& key) {
   // Data we are sending to the server.
   DeleteRequest request;

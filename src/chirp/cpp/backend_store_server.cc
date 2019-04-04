@@ -9,7 +9,6 @@
 #include "backend_store_server.h"
 #include "service_layer_client.h"
 
-// Logic and data behind the server's behaviour - add implementation here.
 Status KeyValueStoreServiceImpl::put(ServerContext* context,
                                      const PutRequest* request,
                                      PutReply* reply) {
@@ -28,11 +27,11 @@ Status KeyValueStoreServiceImpl::put(ServerContext* context,
     std::string s((data_iter->second).data(), (data_iter->second).length());
     type = s;
   } else {
+    // Missing type
     std::cout << "Error: No metadata." << std::endl;
   }
 
   if (type == "register") {
-    // If User (USR)
 
     if (!store_.KeyExists(key)) {
       store_.Put(key, "");
@@ -42,14 +41,13 @@ Status KeyValueStoreServiceImpl::put(ServerContext* context,
       return Status::CANCELLED;
     }
 
-  } else if (type ==
-             "follow") {  // otherwise, it's an append to a following list
+  } else if (type == "follow") {
     std::string user_to_follow = value;
 
     if (store_.KeyExists(key) && store_.KeyExists(user_to_follow)) {
       store_.Put(key, user_to_follow);
 
-      // Test following list TODO: Delete this
+      // Backend feed of user's updated following list
       std::vector<std::string> value_list = store_.Get(key);
       std::cout << "User " << key << " now following: ";
       for (int i = 0; i < value_list.size(); i++) {
@@ -68,8 +66,8 @@ Status KeyValueStoreServiceImpl::put(ServerContext* context,
     std::string chirp_id = chirp_catcher.id();
     std::string chirp_parent_id = chirp_catcher.parent_id();
 
-    // For chirps in store_, index 0 contains byte string form, rest are
-    // serialized chirp replies
+    // For chirps in store_, the key is the chirp ID. Index 0 contains the chirp in byte string form,
+    // and indexes 1 to n-1 contain the chirp IDs that are replies 
 
     if (chirp_parent_id == "0") {  // Root chirp
       store_.Put(key, value);
@@ -77,22 +75,20 @@ Status KeyValueStoreServiceImpl::put(ServerContext* context,
 
     } else {  //  Reply chirp
 
-      // Step 1: Append chirp bytes to parent chirp's reply vector
-      if (store_.KeyExists(chirp_parent_id)) {
+      // Step 1: Append chirp ID to parent chirp's reply vector
+      if (store_.KeyExists(chirp_parent_id)) { //Parent ID is valid
         store_.Put(chirp_parent_id, key);
 
-      } else {
+      } else { // Parent ID is not valid, Put returns Status::CANCELLED
         std::cout << "Error: Parent ID not found in map." << std::endl;
         return Status::CANCELLED;
       }
 
-      // Step 2: Store chirp id : fresh reply vector
-      // Note: If Parent ID is not valid, the chirp is posted as a Root Chirp.
-
+      // Step 2: Store chirp id : fresh reply vector (index 0 is the chirp's bytes, and subsequent elements are
+      //IDs of chirps in reply to the current chirp
       store_.Put(key, value);
       std::cout << "Inserted Key: " << key << std::endl;
     }
-
   } else {
     std::cout << "Error: Invalid type @ store_server PUT" << std::endl;
   }
@@ -140,8 +136,7 @@ Status KeyValueStoreServiceImpl::get(
         std::vector<std::string>* reply_thread_vec =
             new std::vector<std::string>();
         std::vector<std::string>* full_thread_vec;
-        full_thread_vec =
-            DFSReplyThread(chirp_map, reply_thread_vec, key_requested);
+        full_thread_vec = DFSReplyThread(chirp_map, reply_thread_vec, key_requested);
         GetReply reply;
         std::string value_requested;
         for (int i = 0; i < full_thread_vec->size(); i++) {

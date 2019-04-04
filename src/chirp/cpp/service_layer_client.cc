@@ -18,6 +18,10 @@ ServiceLayerClient::ServiceLayerClient(const bool& testing) {
 
 // rpc registeruser
 std::string ServiceLayerClient::registeruser(const std::string& username) {
+
+  if(username == ""){
+    return "Error: Empty username";
+  }
   // Context for the client. It could be used to convey extra information to
   // the server and/or tweak certain RPC behaviors.
   ClientContext context;
