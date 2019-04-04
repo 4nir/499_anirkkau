@@ -83,33 +83,33 @@ Install gtest
 Register
 
 ```
-  $ ./chirp --register <username>
+  $ ./command_line --register <username>
 ```
 (user must be registered to perform any other commands)
 Chirp
 
 ```
-  $ ./chirp --user <username> --chirp <chirp text>
+  $ ./command_line --user <username> --chirp <chirp text>
 ```
 Reply
 
 ```
-  $ ./chirp --user <username> --chirp <chirp text> --reply <reply chirp id>
+  $ ./command_line --user <username> --chirp <chirp text> --reply <reply chirp id>
 ```
 Follow
 
 ```
-  $ ./chirp --user <username> --follow <username_to_follow>
+  $ ./command_line --user <username> --follow <username_to_follow>
 ```
 Read
 
 ```
-  $ ./chirp --read <chirp_id>
+  $ ./command_line --read <chirp_id>
 ```
 Monitor
 
 ```
-  $ ./chirp --user <username> --monitor
+  $ ./command_line --user <username> --monitor
 ```
 **Cleaning:**
 ```$ make clean```: Removes all executables
