@@ -1,7 +1,7 @@
 # CS-499 Chirp Project Phase 2
 
-## Author: Anirudh Kaushik
-## Email: anirkkau@usc.edu
+### Author: Anirudh Kaushik
+### Email: anirkkau@usc.edu
 
 1) Setting up Vagrant:
 
@@ -30,23 +30,53 @@
 
   **Setting up dependencies**
 
-    -Update apt-get: 
+    Update apt-get: 
+
     ```
       $ sudo apt-get update
     ```
+
     2. Install g++:
-     ```$ sudo apt-get install g++```
+
+     ```
+     $ sudo apt-get install g++
+     ```
+
     3. Install cmake:
-     ```$ sudo apt-get install cmake```
+
+     ```
+      $ sudo apt-get install cmake
+     ```
     4. Install prereqs: 
-    ```$ sudo apt-get install build-essential autoconf libtool pkg-config```
+
+    ```
+      $ sudo apt-get install build-essential autoconf libtool pkg-config
+    ```
     5. Install gtests & gflags:
-    a. ```$ sudo apt-get install libgflags-dev libgtest-dev . cd /usr/src/gtest``` 
-    b. ```$ sudo cmake CMakeLists.txt``` 
-    c. ```$ sudo make``` 
-    d. ```$ sudo cp *.a /usr/lib```
+
+    a. 
+    ```
+      $ sudo apt-get install libgflags-dev libgtest-dev . cd /usr/src/gtest
+    ``` 
+    b. 
+    ```
+      $ sudo cmake CMakeLists.txt
+    ``` 
+
+    c.
+     ```
+      $ sudo make
+    ``` 
+
+    d.
+     ```
+      $ sudo cp *.a /usr/lib
+     ```
+     
     6. Install clang: 
-    ```$ sudo apt-get install clang libc++-dev```
+    ```
+      $ sudo apt-get install clang libc++-dev
+    ```
 
 **Setting up gRPC**
 
