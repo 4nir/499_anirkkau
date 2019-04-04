@@ -176,7 +176,7 @@ Status KeyValueStoreServiceImpl::deletekey(ServerContext* context,
                                            const DeleteRequest* request,
                                            DeleteReply* reply) {
   if (store_.KeyExists(request->key())) {
-    store_.DeleteKey(request->key());  // TODO: Test this
+    store_.DeleteKey(request->key());
     return Status::OK;
   } else {
     std::cout << "Error: Invalid chirp ID." << std::endl;
