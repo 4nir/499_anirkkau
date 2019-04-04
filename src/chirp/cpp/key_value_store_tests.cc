@@ -48,7 +48,7 @@ TEST(PutGetTest, ThreePutsThreeKeys) {
   const std::vector<std::string>& values_2 = test_store.Get("2testkey");
   ASSERT_EQ("2testvalue", values_2.at(0));
   ASSERT_EQ(1, values_2.size());
-  
+
   const std::vector<std::string>& values_3 = test_store.Get("3testkey");
   ASSERT_EQ("3testvalue", values_3.at(0));
   ASSERT_EQ(1, values_3.size());
@@ -61,7 +61,7 @@ TEST(PutGetTest, ThreePutsOneKey) {
   test_store.Put("1testkey", "1testvalue");
   test_store.Put("1testkey", "2testvalue");
   test_store.Put("1testkey", "3testvalue");
-  
+
   const std::vector<std::string>& values = test_store.Get("1testkey");
   ASSERT_EQ("1testvalue", values.at(0));
   ASSERT_EQ("2testvalue", values.at(1));
@@ -97,7 +97,7 @@ TEST(DeleteTest, InvalidDelete) {
   EXPECT_FALSE(test_store.DeleteKey("invalid_key"));
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }

@@ -7,8 +7,8 @@
 
 #include <grpcpp/grpcpp.h>
 #include "backend_store.grpc.pb.h"
-#include "service_layer.grpc.pb.h"
 #include "key_value_store.h"
+#include "service_layer.grpc.pb.h"
 #include "service_layer.h"
 using chirp::Chirp;
 using chirp::Timestamp;
@@ -73,8 +73,8 @@ TEST(ServiceLayerFollow, FollowNonexistent) {
   EXPECT_FALSE(s.follow("batman", "joker"));
 }
 
-// Tests Follow method for ServiceLayer; Non-existent user tries to call follow()
-// Should return false
+// Tests Follow method for ServiceLayer; Non-existent user tries to call
+// follow() Should return false
 TEST(ServiceLayerFollow, UserNonexistent) {
   KeyValueStoreClass store_client;
   ServiceLayer s(&store_client);
@@ -112,7 +112,7 @@ TEST(ServiceLayerRead, ReadThreeReplyChirps) {
 
 // Tests Read method for ServiceLayer
 // Chirps are a reply chain of 3
-// We expect the the chirps to be read in 
+// We expect the the chirps to be read in
 // the proper order
 TEST(ServiceLayerRead, ReadOrderedReplies) {
   KeyValueStoreClass store_client;
@@ -147,7 +147,7 @@ TEST(ServiceLayerRead, ReadChirpWithNoReplies) {
 // Tests Read method for ServiceLayer
 // The chain of 5 chirps will be a complex reply tree
 // by two different users
-// We expect the the chirps to be read in 
+// We expect the the chirps to be read in
 // the proper order
 TEST(ServiceLayerRead, ReadComplexOrderedReplies) {
   KeyValueStoreClass store_client;
@@ -181,7 +181,7 @@ TEST(ServiceLayerMonitor, MonitorInvalidUsername) {
   KeyValueStoreClass store_client;
   ServiceLayer s(&store_client);
   s.registeruser("robin");
-  auto monitor_vec_1 = s.monitor("batman"); // vector should be empty
+  auto monitor_vec_1 = s.monitor("batman");  // vector should be empty
   EXPECT_EQ(0, monitor_vec_1.size());
 }
 
@@ -195,10 +195,10 @@ TEST(ServiceLayerMonitor, MonitorFunction) {
   ServiceLayer s(&store_client);
   s.registeruser("robin");
   s.registeruser("batman");
-  auto monitor_vec_1 = s.monitor("batman"); // vector should be empty
+  auto monitor_vec_1 = s.monitor("batman");  // vector should be empty
   s.follow("batman", "robin");
   s.chirp("robin", "chirp1", "0");
-  auto monitor_vec_2 = s.monitor("batman"); // vector should have 1 chirp
+  auto monitor_vec_2 = s.monitor("batman");  // vector should have 1 chirp
 
   EXPECT_EQ(0, monitor_vec_1.size());
   EXPECT_EQ(1, monitor_vec_2.size());
@@ -214,20 +214,16 @@ TEST(ServiceLayerMonitor, MonitorComplexFunction) {
   ServiceLayer s(&store_client);
   s.registeruser("robin");
   s.registeruser("batman");
-  auto monitor_vec_1 = s.monitor("batman"); // vector should be empty
+  auto monitor_vec_1 = s.monitor("batman");  // vector should be empty
   s.follow("batman", "robin");
   s.chirp("robin", "chirp1", "0");
   s.chirp("robin", "chirp2", "cid//1");
   s.chirp("robin", "chirp3", "cid//2");
-  auto monitor_vec_2 = s.monitor("batman"); // vector should have 3 chirps
+  auto monitor_vec_2 = s.monitor("batman");  // vector should have 3 chirps
 
   EXPECT_EQ(0, monitor_vec_1.size());
   EXPECT_EQ(3, monitor_vec_2.size());
 }
-
-
-
-
 
 int main(int argc, char **argv) {
   testing::InitGoogleTest(&argc, argv);
