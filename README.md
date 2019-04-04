@@ -28,10 +28,12 @@
     $ vagrant init ubuntu/bionic64
   ```
 
-  **Setting up dependencies:**
+  **Setting up dependencies**
 
     1. Update apt-get: 
-    ```$ sudo apt-get update```
+    ```
+      $ sudo apt-get update
+    ```
     2. Install g++:
      ```$ sudo apt-get install g++```
     3. Install cmake:
