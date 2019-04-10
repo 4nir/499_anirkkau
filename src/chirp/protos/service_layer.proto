@@ -24,45 +24,47 @@ message RegisterReply {
   // Empty because success/failure is signaled via GRPC status.
 }
 
-// message ChirpRequest {
-//   string username = 1;
-//   string text = 2;  // The contents of the new chirp to be posted.
-//   bytes parent_id = 3;  // The ID of the chirp this is in response to.
-// }
+message ChirpRequest {
+  string username = 1;
+  string text = 2;  // The contents of the new chirp to be posted.
+  bytes parent_id = 3;  // The ID of the chirp this is in response to.
+}
 
-// message ChirpReply {
-//   Chirp chirp = 1;  // Returns the stored chirp.
-// }
+message ChirpReply {
+  Chirp chirp = 1;  // Returns the stored chirp.
+}
 
-// message FollowRequest {
-//   string username = 1;
-//   string to_follow = 2;  // The username of the other user to follow.
-// }
+message FollowRequest {
+  string username = 1;
+  string to_follow = 2;  // The username of the other user to follow.
+}
 
-// message FollowReply {
-//   // Empty because success/failure is signaled via GRPC status.
-// }
+message FollowReply {
+  // Empty because success/failure is signaled via GRPC status.
+}
 
-// message ReadRequest {
-//   bytes chirp_id = 1;  // The ID of the chirp to start the read at.
-// }
+message ReadRequest {
+  bytes chirp_id = 1;  // The ID of the chirp to start the read at.
+}
 
-// message ReadReply {
-//   repeated Chirp chirps = 1;  // The requested chirp thread.
-// }
+message ReadReply {
+  repeated Chirp chirps = 1;  // The requested chirp thread.
+  string chirp_thread = 2;   // The requested chirp thread in string form
+}
 
-// message MonitorRequest {
-//   string username = 1;
-// }
+message MonitorRequest {
+  string username = 1;
+}
 
-// message MonitorReply {
-//   Chirp chirp = 1;
-// }
+message MonitorReply {
+  Chirp chirp = 1;
+  bytes chirp_bytes = 2;
+}
 
 service ServiceLayer {
   rpc registeruser (RegisterRequest) returns (RegisterReply) {}
-  // rpc chirp (ChirpRequest) returns (ChirpReply) {}
-  // rpc follow (FollowRequest) returns (FollowReply) {}
-  // rpc read (ReadRequest) returns (ReadReply) {}
-  // rpc monitor (MonitorRequest) returns (stream MonitorReply) {}
+  rpc chirp (ChirpRequest) returns (ChirpReply) {}
+  rpc follow (FollowRequest) returns (FollowReply) {}
+  rpc read (ReadRequest) returns (ReadReply) {}
+  rpc monitor (MonitorRequest) returns (stream MonitorReply) {}
 }

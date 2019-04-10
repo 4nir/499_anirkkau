@@ -27,11 +27,6 @@ message DeleteReply {
   // Empty because success/failure is signaled via GRPC status.
 }
 
-//TODO: Move to different Proto file
-message ChirpMessage {
-  string message = 1;
-}
-
 service KeyValueStore {
   rpc put (PutRequest) returns (PutReply) {}
   rpc get (stream GetRequest) returns (stream GetReply) {}

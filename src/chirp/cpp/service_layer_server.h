@@ -10,54 +10,41 @@
 #include <grpcpp/server_context.h>
 #include "backend_store.grpc.pb.h"
 #include "service_layer.grpc.pb.h"
-#include "service_layer.h"
+#include "service_layer_client.h"
 
-// Client Includes
-using grpc::Channel;
-using grpc::ClientContext;
-using grpc::ClientReader;
-using grpc::ClientReaderWriter;
-using grpc::ClientWriter;
-using grpc::Status;
-
-// Server Includes
-using grpc::Server;
-using grpc::ServerBuilder;
-using grpc::ServerContext;
-using grpc::ServerReader;
-using grpc::ServerReaderWriter;
-using grpc::ServerWriter;
-using grpc::Status;
-
-// Chirp Includes
-using chirp::KeyValueStore;
-using chirp::PutRequest;
-using chirp::PutReply;
-using chirp::GetRequest;
-using chirp::GetReply;
-using chirp::DeleteRequest;
-using chirp::DeleteReply;
-
-using chirp::ServiceLayer;
-using chirp::Timestamp;
-using chirp::Chirp;
-using chirp::RegisterRequest;
-using chirp::RegisterReply;
-
-// Logic and data behind the server's behaviour - add implementation here.
+//ServiceLayer server
 class ServiceLayerServiceImpl final : public ServiceLayer::Service {
+ public:
+  // Handles registeruser command received from ServiceLayerClient
+  Status registeruser(ServerContext* context, const RegisterRequest* request,
+                      RegisterReply* reply);
 
-  public:
-    Status registeruser(ServerContext* context, const RegisterRequest* request,
-                    RegisterReply* reply);
+  // Handles chirp command received from ServiceLayerClient
+  Status chirp(ServerContext* context, const ChirpRequest* request,
+               ChirpReply* reply);
 
-  private: 
-    //Q: Is this right?
-    // KeyValueStoreClient store_client(grpc::CreateChannel(
-    // "localhost:50052", grpc::InsecureChannelCredentials())); 
+  // Handles follow command received from ServiceLayerClient
+  Status follow(ServerContext* context, const FollowRequest* request,
+                FollowReply* reply);
+
+  // Handles read command received from ServiceLayerClient
+  Status read(ServerContext* context, const ReadRequest* request,
+              ReadReply* reply);
+
+  // Handles monitor command received from ServiceLayerClient
+  Status monitor(ServerContext* context, const MonitorRequest* request,
+                 ServerWriter<MonitorReply>* writer);
+
+  // Generates chirp ID to be stored in KVS
+  // @return: returns unique chirp ID in string form
+  std::string GenerateChirpID();
+
+ private:
+  // Keeps track of every chirp (for Monitor)
+  std::vector<std::string> chirp_log_;
+
+  // Count of chirps
+  int chirp_count_ = 0;
 };
 
-
-#endif
-
-
+#endif  // SERVICE_SERVER_H

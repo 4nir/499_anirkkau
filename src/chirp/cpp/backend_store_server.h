@@ -1,42 +1,45 @@
 #ifndef BACKEND_SERVER_H
 #define BACKEND_SERVER_H
 
-#include <iostream>
-#include <string>
-
 #include <grpcpp/grpcpp.h>
 #include <grpcpp/server.h>
 #include <grpcpp/server_builder.h>
 #include <grpcpp/server_context.h>
+#include <iostream>
+#include <string>
 #include "backend_store.grpc.pb.h"
+#include "key_value_store.h"
+#include "service_layer_client.h"
 
-using grpc::Server;
-using grpc::ServerBuilder;
-using grpc::ServerContext;
-using grpc::ServerReader;
-using grpc::ServerReaderWriter;
-using grpc::ServerWriter;
-using grpc::Status;
-
-using chirp::KeyValueStore;
-using chirp::PutRequest;
-using chirp::PutReply;
-using chirp::GetRequest;
-using chirp::GetReply;
-using chirp::DeleteRequest;
-using chirp::DeleteReply;
-
+// KeyValueStore server
 class KeyValueStoreServiceImpl final : public KeyValueStore::Service {
-  
-  public:
-    Status put(ServerContext* context, const PutRequest* request,
-                    PutReply* reply);
-    Status get(ServerContext* context,
-                    ServerReaderWriter<GetReply, GetRequest>* stream);
-    Status deletekey(ServerContext* context, const DeleteRequest* request,
-                    DeleteReply* reply);
-  private:
-    std::map<std::string, std::string> chirpMap;
+ public:
+  // Handles put command received from KeyValueStoreClient
+  Status put(ServerContext* context, const PutRequest* request,
+             PutReply* reply);
+
+  // Handles get command received from KeyValueStoreClient
+  Status get(ServerContext* context,
+             ServerReaderWriter<GetReply, GetRequest>* stream);
+
+  // Handles deletekey command received from KeyValueStoreClient
+  Status deletekey(ServerContext* context, const DeleteRequest* request,
+                   DeleteReply* reply);
+
+  // Takes in the store map, the starting chirp ID to read from, and returns a
+  // vector of chirp replies in byte form
+  std::vector<std::string>* DFSReplyThread(
+      std::map<std::string, std::vector<std::string> > chirp_map,
+      std::vector<std::string>* reply_thread_vec, std::string chirp_id);
+
+ private:
+  // Stores map that tracks users and chirps
+  // Users: The key holds the username (string), and the value holds the
+  // usernames that the key follows (vector of strings) Chirps: The key holds the
+  // chirp ID (string), and the value holds the following:
+  // 1) The 0th index holds the serialized form of the chirp
+  // 2) Indexes 1 to n-1 holds the chirp IDs of chirps in reply to the key
+  KeyValueStoreClass store_;
 };
 
-#endif
+#endif  // BACKEND_SERVER_H

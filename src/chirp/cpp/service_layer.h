@@ -3,78 +3,78 @@
 
 #include <iostream>
 #include <random>
+#include <sstream>
 #include <string>
 #include <thread>
 
 #include <grpcpp/grpcpp.h>
-#include <grpcpp/channel.h>
-#include <grpcpp/client_context.h>
-#include <grpcpp/create_channel.h>
 #include "backend_store.grpc.pb.h"
 #include "service_layer.grpc.pb.h"
-
-// Client Includes
-using grpc::Channel;
-using grpc::ClientContext;
-using grpc::ClientReader;
-using grpc::ClientReaderWriter;
-using grpc::ClientWriter;
-using grpc::Status;
-
-// Server Includes
-using grpc::Server;
-using grpc::ServerBuilder;
-using grpc::ServerContext;
-using grpc::ServerReader;
-using grpc::ServerReaderWriter;
-using grpc::ServerWriter;
-using grpc::Status;
-
-// Chirp Includes
-using chirp::KeyValueStore;
-using chirp::PutRequest;
-using chirp::PutReply;
-using chirp::GetRequest;
-using chirp::GetReply;
-using chirp::DeleteRequest;
-using chirp::DeleteReply;
-
-using chirp::ServiceLayer;
-using chirp::Timestamp;
+#include "key_value_store.h"
 using chirp::Chirp;
-using chirp::RegisterRequest;
-using chirp::RegisterReply;
+using chirp::Timestamp;
 
-class KeyValueStoreClient {
-  public:
-    std::string put(const std::string& key, const std::string& value);
+class ServiceLayer {
+ public:
+  // Default constructor
+  ServiceLayer(KeyValueStoreClass* store_client);
 
-    std::string get(const std::string& key);
+  // Registers a new user with the given username
+  // @username: username of new user
+  // @return: bool representing success or failure of registration
+  bool registeruser(const std::string& username);
 
-    std::string deletekey(const std::string& key);
+  // Follows a new user with the given username
+  // @username: username of new user
+  // @to_follow: username of user to follow
+  // @return: bool representing success or failure of follow
+  bool follow(const std::string& username, const std::string& to_follow);
 
-    GetRequest MakeGetRequest(const std::string& key);
+  // Posts new chirp
+  // @username: username of chirper
+  // @text: text of chirp
+  // @parent_id: Parent ID of chirp; "0" if it's a root chirp
+  // @return: bool representing success or failure of chirp
+  bool chirp(const std::string& username, const std::string& text,
+                    const std::string& parent_id);
 
-    KeyValueStoreClient(std::shared_ptr<Channel> channel) 
-      : stub_(KeyValueStore::NewStub(channel)) {}
+  // Reads a thread from a given id
+  // @id: the beginning of the chirp thread
+  // @return: vector of chirp replies in object form
+  std::vector<Chirp> read(const std::string& id);
 
-  private:
-    std::unique_ptr<KeyValueStore::Stub> stub_;
+  // Monitors for a given username
+  // @username: monitoring user
+  // @return: vector of relevent chirps in object form
+  std::vector<Chirp> monitor(const std::string& username);
+
+  // Generates chirp ID to be stored in KVS
+  // @return: returns unique chirp ID in string form
+  std::string GenerateChirpID();
+
+  //Takes in the store map, the starting chirp ID to read from, and returns a
+  //vector of chirp replies in byte form
+  // @chirp_map: current state of chirp_map in KVS
+  //@reply_thread_vec: empty array that will be populated as it's passed through recursive calls
+  // @return: vector of relevent chirps in the thread after the recursive DFS search
+  std::vector<std::string>* DFSReplyThread(
+    std::map<std::string, std::vector<std::string> > chirp_map,
+    std::vector<std::string>* reply_thread_vec, std::string chirp_id);
+
+  // Returns the following list of a user
+  // @username: username of user
+  // @return: returns a vector of usernames that user is following  
+  std::vector<std::string> getFollowingList(const std::string& username);
+
+ private:
+  //Store client for testing
+  KeyValueStoreClass* store_client_;
+
+  //Keeps track of every chirp (for Monitor)
+  std::vector<std::string> chirp_log_;
+
+  //Count of chirps
+  int chirp_count_ = 0;
 };
 
-class ServiceLayerClient {
-  public:
-    std::string registeruser(const std::string& username);
-
-    ServiceLayerClient(std::shared_ptr<Channel> channel)
-        : stub_(ServiceLayer::NewStub(channel)) {}
-
-  private:
-    std::unique_ptr<ServiceLayer::Stub> stub_;
-};
-
-struct ChirpMessage {
-  std::string message;
-};
-
-#endif
+#endif  // SERVICE_LAYER_H
