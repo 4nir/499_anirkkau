@@ -150,3 +150,10 @@ std::string ServiceLayerClient::monitor(const std::string& username) {
     return "Error: Invalid monitor request.";
   }
 }
+
+bool ServiceLayerClient::stream(const std::string& username,
+                                const std::string& hashtag,
+                                std::function<void(Chirp)> handle_response) {
+  // TODO(tianhanl): add implementation of the function
+  return true;
+}

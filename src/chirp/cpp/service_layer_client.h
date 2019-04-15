@@ -1,6 +1,7 @@
 #ifndef SERVICE_LAYER_CLIENT_H
 #define SERVICE_LAYER_CLIENT_H
 
+#include <functional>
 #include <iostream>
 #include <random>
 #include <sstream>
@@ -89,6 +90,13 @@ class ServiceLayerClient {
   // @username: username
   // @return: string representing success or failure of read
   std::string monitor(const std::string& username);
+
+  // Streams for chirps that contain `hashtag` for a given `username`
+  // @username: username
+  // @hashtag: hashtag
+  // @return: the status of the request
+  bool stream(const std::string& username, const std::string& hashtag,
+              std::function<void(Chirp)> handle_response);
 
   ServiceLayerClient(std::shared_ptr<Channel> channel)
       : stub_(ServiceLayer::NewStub(channel)) {}
