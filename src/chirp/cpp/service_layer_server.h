@@ -12,7 +12,7 @@
 #include "service_layer.grpc.pb.h"
 #include "service_layer_client.h"
 
-//ServiceLayer server
+// ServiceLayer server
 class ServiceLayerServiceImpl final : public ServiceLayer::Service {
  public:
   // Handles registeruser command received from ServiceLayerClient
@@ -34,6 +34,10 @@ class ServiceLayerServiceImpl final : public ServiceLayer::Service {
   // Handles monitor command received from ServiceLayerClient
   Status monitor(ServerContext* context, const MonitorRequest* request,
                  ServerWriter<MonitorReply>* writer);
+
+  // Handles stream command received from ServiceLayerClient
+  Status stream(ServerContext* context, const StreamRequest* request,
+                ServerWriter< ::chirp::StreamReply>* writer) override;
 
   // Generates chirp ID to be stored in KVS
   // @return: returns unique chirp ID in string form

@@ -166,6 +166,18 @@ Status ServiceLayerServiceImpl::monitor(ServerContext* context,
   return Status::OK;
 }
 
+Status ServiceLayerServiceImpl::stream(
+    ServerContext* context, const StreamRequest* request,
+    ServerWriter< ::chirp::StreamReply>* writer) {
+  KeyValueStoreClient store_client(grpc::CreateChannel(
+      "localhost:50000", grpc::InsecureChannelCredentials()));
+  const std::string& username = request->username();
+  const std::string& hashtag = request->hashtag();
+  // TODO(tianhanl): Add implementaion of stream
+
+  return Status::OK;
+}
+
 std::string ServiceLayerServiceImpl::GenerateChirpID() {
   chirp_count_++;
   std::string CurrentClientID = "cid//";

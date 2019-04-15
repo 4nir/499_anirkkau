@@ -54,6 +54,10 @@ using chirp::RegisterRequest;
 using chirp::ServiceLayer;
 using chirp::Timestamp;
 
+// Stream
+using chirp::StreamReply;
+using chirp::StreamRequest;
+
 // gRPC client to communicate with ServiceLayerServiceImpl
 class ServiceLayerClient {
  public:
