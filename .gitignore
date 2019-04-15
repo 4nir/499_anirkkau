@@ -6,3 +6,8 @@ Vagrantfile
 *.pb.h
 .vscode/
 .clang-format
+backend_store_server
+command_line
+key_value_store_tests
+service_layer_server
+service_layer_tests
