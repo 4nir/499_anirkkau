@@ -225,6 +225,29 @@ TEST(ServiceLayerMonitor, MonitorComplexFunction) {
   EXPECT_EQ(3, monitor_vec_2.size());
 }
 
+// Tests Stream method for ServiceLayer
+// When a invalid username is given, stream method should return error
+TEST(ServiceLayerStream, InvalidUserNameShouldReturnError) {}
+
+// Tests Stream method for ServiceLayer
+// When a user that current user is following sends a chirp contains a not
+// matching hashtag, stream function should return a empty vector
+TEST(ServiceLayerStream, NonRelatedChirpShouldNotStream) {}
+
+// Tests Stream method for ServiceLayer
+// When a user that current user is following sends a chrip continas the
+// matching hashtag, stream function should return a vector conains this chirp
+TEST(ServiceLayerStream, SingleHashtagMatchingChirpShouldWork) {}
+
+// Tests Stream method for ServiceLayer
+// When multiple users that current user is following send chirps continas the
+// matching hashtag, stream function should return a vector conains those chirps
+TEST(ServiceLayerStream, MultipleHashtagMatchingChirpShouldWork) {}
+
+// Tests Stream method for ServiceLayer
+// stream function should work for chirp containing multiple hashtags
+TEST(ServiceLayerStream, MultipleHashtagsChirpShouldWork) {}
+
 int main(int argc, char **argv) {
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
