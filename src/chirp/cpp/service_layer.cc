@@ -72,7 +72,7 @@ std::vector<Chirp> ServiceLayer::read(const std::string& id) {
   // Grab current state of KeyValueStoreClass's internal map
   std::map<std::string, std::vector<std::string> > chirp_map =
       store_client_->ReturnStoreMap();
-      
+
   // Recursive DFS search that returns vector of entire thread of serialized
   // chirps
   std::vector<std::string>* reply_thread_vec = new std::vector<std::string>();
@@ -127,6 +127,11 @@ std::vector<Chirp> ServiceLayer::monitor(const std::string& username) {
   }
 
   return chirp_obj_thread;
+}
+
+std::vector<Chirp> ServiceLayer::Stream(const std::string& username,
+                                        const std::string& hashtag) {
+  // TODO(tianhanl): add implementation
 }
 
 std::string ServiceLayer::GenerateChirpID() {
